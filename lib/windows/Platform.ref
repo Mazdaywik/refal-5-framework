@@ -1,0 +1,15 @@
+*$FROM Library
+*$EXTERN True, False
+
+
+$ENTRY Platform { = Windows; }
+
+*$EENUM Windows, POSIX
+
+$ENTRY DirectorySeparator { = '\\'; }
+
+$ENTRY IsDirectorySeparator {
+  '\\' = True; '/' = True; s.Other = False;
+}
+
+$ENTRY PathSeparator { = ';' }
