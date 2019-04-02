@@ -3,7 +3,7 @@ $EXTERN Builtins, Map, Unique;
 *$EXTERN Success, Fails
 
 *$FROM Parser
-*$EXTERN /*Function,*/ Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
+*$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
 *$EXTERN Condition, Brackets, Variable, Compound, Number, Char
 
 *$FROM Library
@@ -24,8 +24,6 @@ Transform-Step {
   s.FnMode e.Units
     = <DoTransform s.FnMode <GetFunctionNames (<Builtins>) e.Units>>;
 }
-
-*$ENUM Function /* костыль, чтобы скомпилировалось */
 
 GetFunctionNames {
   (e.Names) e.Units (Function t.SrcPos (e.Name) s.Scope e.Sentences)

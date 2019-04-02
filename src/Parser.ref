@@ -91,7 +91,7 @@ Unit {
 
       (s.Type t.Pos e.Value),
           <OneOf s.Type TkEntry TkName>: True =
-        <Function t.NextToken e.Tokens>;
+        <ParseFunction t.NextToken e.Tokens>;
 
       /* других типов быть не должно */
     }
@@ -165,14 +165,14 @@ NameList-DoNames {
     >;
 }
 
-*$EENUM Entry, Local
+*$EENUM Function, Entry, Local
 
 /*
   Function = ["$ENTRY"] NAME Block.
 
   <Function e.Tokens> == (e.Errors t.FunctionUnit) e.Tokens
 */
-Function {
+ParseFunction {
   (TkEntry t.EntryPos) (TkName t.NamePos e.Name) e.Tokens =
     <Function-AfterBlock
       t.EntryPos (e.Name) Entry <Block e.Tokens>

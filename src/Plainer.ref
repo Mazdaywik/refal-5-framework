@@ -1,5 +1,6 @@
 *$FROM Parser
-*$EXTERN SpecialComment, Local, RETURN, Condition, CALL-BLOCK
+*$EXTERN Extern, Function, SpecialComment, Entry, Local, RETURN, Condition
+*$EXTERN CALL-BLOCK, Brackets, Call, Compound, Number, Char, Variable
 
 *$FROM Utils
 *$EXTERN False, True
@@ -32,11 +33,11 @@ Trim-R {
 
 DoPlain {
   (Extern e.Names) e.Units
-    = <Extern e.Names>
+    = <PlainExtern e.Names>
       <Plain e.Units>;
 
   (Function t.SrcPos (e.Name) s.Scope e.Sentences) e.Units
-    = <Function (e.Name) s.Scope e.Sentences>
+    = <PlainFunction (e.Name) s.Scope e.Sentences>
       <Plain e.Units>;
 
   (SpecialComment t.SrcPos e.Text) e.Units
@@ -60,7 +61,7 @@ DoLongLine {
 }
 
 
-Extern {
+PlainExtern {
   e.Names = <DoExtern ('$EXTERN ') e.Names>;
 }
 
@@ -89,15 +90,15 @@ CommaOrSemicolon {
 }
 
 
-Function {
+PlainFunction {
   (e.Name) s.Scope e.Sentences
-    = (<Entry s.Scope> e.Name ' {')
+    = (<PlainScope s.Scope> e.Name ' {')
       <Sentences ('  ') e.Sentences>
       ('}')
       ()
 };
 
-Entry {
+PlainScope {
   Entry = '$ENTRY ';
   Local = /* пусто */;
 }
@@ -217,7 +218,7 @@ AppendTerm {
 }
 
 InlineTerm {
-  (s.Type e.Value) = <Mu s.Type e.Value>;
+  (s.Type e.Value) = <PlainByType s.Type e.Value>;
 
   ';' = ';';
 }
@@ -246,13 +247,20 @@ MultilineTerm-Prefix {
             (e.Indent '>' e.Suffix);
 
         (s.Type e.Value)
-          = (e.Prefix <Mu s.Type e.Value> e.Suffix);
+          = (e.Prefix <PlainByType s.Type e.Value> e.Suffix);
       };
 }
 
-*$ENTRY plainer_USE { = Compound Number Char Variable }
+PlainByType {
+  Compound e.Chars = <PlainCompound e.Chars>;
+  Number s.Number = <PlainNumber s.Number>;
+  Char s.Char = <PlainChar s.Char>;
+  Variable t.SrcPos s.Type e.Index = <PlainVariable t.SrcPos s.Type e.Index>;
+  Call t.SrcPos (e.Function) e.Arg = <PlainCall t.SrcPos (e.Function) e.Arg>;
+  Brackets e.Expr = <PlainBrackets e.Expr>;
+}
 
-Compound {
+PlainCompound {
   e.Chars, <IsIdent e.Chars>: True e.Textual = e.Textual;
 
   e.Chars = '\"' <DoCompound e.Chars> '\"'
@@ -286,11 +294,11 @@ DoIsIdent {
   (e.Valid) s.Other e.Tail = False;
 }
 
-Number {
+PlainNumber {
   s.Number = <Symb s.Number>;
 }
 
-Char {
+PlainChar {
   s.Char = '\'' <CharRep s.Char> '\''
 }
 
@@ -316,15 +324,15 @@ HexDigit {
     = s.Digit
 }
 
-Variable {
+PlainVariable {
   t.SrcPos s.Type e.Index = s.Type '.' e.Index;
 }
 
-Brackets {
+PlainBrackets {
   e.Expr = '(' <InlineExpr e.Expr> ')'
 }
 
-Call {
+PlainCall {
   t.SrcPos (e.Function) /* пусто */ = '<' e.Function '>';
 
   t.SrcPos (e.Function) e.Expr = '<' e.Function ' ' <InlineExpr e.Expr> '>'
