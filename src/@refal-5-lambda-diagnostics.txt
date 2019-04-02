@@ -1,0 +1,2 @@
+print-statistics = false
+dump-file = __dump.txt

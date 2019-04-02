@@ -2,23 +2,23 @@
 set SOURCES=Main Utils Lexer Parser Transformer Plainer Tests
 set TARGEXE=Main-1.exe
 
-if exist ..\rsls\Main-1.exe call :TEST NUL
+if exist ..\rsls\Main-1.exe call :TEST NUL || exit /b 1
 
 call :SRMAKE Main.ref
 move Main.exe %TARGEXE%
 
-call :TEST MAKE-OUT
+call :TEST MAKE-OUT || exit /b 1
 
 echo ===TEST OUT===
 set TARGEXE=Main-2.exe
-call :TEST MAKE-OUT
+call :TEST MAKE-OUT || exit /b 1
 
 goto :EOF
 
 :TEST
   call :RUN_TRANSFORMER _tests_
   echo.
-  for %%s in (%SOURCES%) do call :TRANSFORM %%s %1
+  for %%s in (%SOURCES%) do call :TRANSFORM %%s %1 || exit /b 1
 
   if {%1}=={MAKE-OUT} (
     pushd out
@@ -33,7 +33,7 @@ goto :EOF
   mkdir out >NUL 2>NUL
   set TARGET=out\%SOURCE%
   if {%2}=={NUL} set TARGET=NUL
-  call :RUN_TRANSFORMER %SOURCE% %TARGET%
+  call :RUN_TRANSFORMER %SOURCE% %TARGET% || exit /b 1
   echo.
   if {%2}=={MAKE-OUT} (
     pushd out
@@ -44,15 +44,15 @@ goto :EOF
 goto :EOF
 
 :RUN_TRANSFORMER
-  %TARGEXE% %* 2>__err.txt || call :FAILED
-  erase __err.txt
+  %TARGEXE% %* || call :FAILED
+  if exist __dump.txt erase __dump.txt
 goto :EOF
 
 :FAILED
   echo FAILED
-  type __err.txt
+  type __dump.txt
   erase ..\rsls\Main.rsl
-  exit
+  exit /b 1
 goto :EOF
 
 :SRMAKE
