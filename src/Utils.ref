@@ -1,3 +1,9 @@
+*$EENUM Success, Fails
+
+*$FROM Library
+*$EXTERN True, False
+
+
 /**
   <ArgList> == (e.Arg)*
 */
@@ -52,7 +58,7 @@ $ENTRY SaveFile {
 
 DoSaveFile {
   (e.Line) e.Lines =
-    <Put 20 e.Line>
+    <Putout 20 e.Line>
     <DoSaveFile e.Lines>;
 
   /* пусто */ = /* всё */;

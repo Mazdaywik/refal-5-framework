@@ -1,5 +1,15 @@
 *$FROM Utils
 $EXTERN OneOf, Builtins;
+*$EXTERN Success, Fails
+
+*$FROM Lexer
+*$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
+*$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
+*$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
+*$EXTERN TkCloseCall, TkError
+
+*$FROM Library
+*$EXTERN True
 
 
 /**
@@ -59,6 +69,8 @@ Program-AfterUnit {
   (e.ErrorsUnits) e.Tokens = e.ErrorsUnits <Program e.Tokens>;
 }
 
+*$EENUM SpecialComment
+
 /*
   Unit = SPECIAL-COMMENT | "$EXTERN" NameList | Function.
 
@@ -85,6 +97,8 @@ Unit {
     }
 }
 
+*$ENUM Error
+
 /*
   NameList = NAME { "," NAME } ";".
 
@@ -99,6 +113,8 @@ NameList {
     ((Error t.Pos 'expected function name after $EXTERN keyword'))
     t.NextToken e.Tokens;
 }
+
+*$EENUM Extern
 
 NameList-DoNames {
   (e.Names) (e.Errors)
@@ -148,6 +164,8 @@ NameList-DoNames {
       e.Tokens
     >;
 }
+
+*$EENUM Entry, Local
 
 /*
   Function = ["$ENTRY"] NAME Block.
@@ -265,6 +283,8 @@ Sentence {
   e.Tokens =
     <Sentence-AfterPattern <Pattern e.Tokens>>;
 }
+
+*$EENUM RETURN, CALL-BLOCK, Condition
 
 Sentence-AfterPattern {
   (e.Errors) t.Pattern (TkAssign t.Pos) e.Tokens =
@@ -475,6 +495,8 @@ Expression-Aux {
   s.Kind e.Tokens =
     <DoExpression s.Kind (/* errors */) (/* collected */) e.Tokens>
 }
+
+*$EENUM Compound, Number, Char, Variable, Brackets, Call
 
 DoExpression {
   s.Kind (e.Errors) (e.Collected) t.NextToken e.Tokens,

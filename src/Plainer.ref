@@ -1,3 +1,10 @@
+*$FROM Parser
+*$EXTERN SpecialComment, Local, RETURN, Condition, CALL-BLOCK
+
+*$FROM Utils
+*$EXTERN False, True
+
+
 /**
   <Plain t.Units*> == (e.TextLine)*
 */
@@ -106,6 +113,8 @@ Sentences {
   (e.Indent) /* пусто */ = /* пусто */;
 }
 
+*$ENUM Comment
+
 Sentence {
   (s.Space e.Indent) Comment e.Text
     = <PutComment (e.Indent) e.Text>;
@@ -153,6 +162,8 @@ Tail {
       <Sentences (e.Indent '    ') e.Sentences>
       (e.Indent '  };')
 }
+
+*$ENUM FIRST, NEXT
 
 Expression {
   (e.Prefix) (e.Indent) /* пусто */, <Trim-R e.Prefix>: /* пусто */
@@ -238,6 +249,8 @@ MultilineTerm-Prefix {
           = (e.Prefix <Mu s.Type e.Value> e.Suffix);
       };
 }
+
+*$ENTRY plainer_USE { = Compound Number Char Variable }
 
 Compound {
   e.Chars, <IsIdent e.Chars>: True e.Textual = e.Textual;

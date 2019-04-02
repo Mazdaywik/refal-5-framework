@@ -1,6 +1,9 @@
 *$FROM Utils
 $EXTERN LoadFile, Inc;
 
+*$FROM Library
+*$EXTERN True, False
+
 
 /**
   <Scan e.SourceFile> == t.Token*
@@ -33,6 +36,8 @@ IncLine {
   (s.Line s.Col e.FileName) = (<Inc s.Line> 1 e.FileName);
 }
 
+*$ENUM Len
+
 IncCol {
   (s.Line s.Col e.FileName) = (s.Line <Inc s.Col> e.FileName);
 
@@ -42,6 +47,8 @@ IncCol {
   (s.Line s.Col e.FileName) '+' s.Number =
     (s.Line <+ s.Col s.Number> e.FileName);
 }
+
+*$EENUM TkEOF, TkSpecComment, TkOpenCall, TkError
 
 DoScan {
   t.Pos = (TkEOF t.Pos);
@@ -113,6 +120,9 @@ IsVarType {
   's' = True; 't' = True; 'e' = True; s.Other = False;
 }
 
+*$EENUM TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
+*$EENUM TkComma, TkColon, TkAssign, TkSemicolon
+
 IsPunctuation {
   s.Punct,
       ('(' TkOpenBracket) (')' TkCloseBracket)
@@ -129,6 +139,8 @@ DoScan-Keyword {
   t.Pos (e.Line) e.Lines
     = <DoScan-BuildKeyword t.Pos ('$') (e.Line) e.Lines>;
 }
+
+*$EENUM TkExtern, TkEntry
 
 DoScan-BuildKeyword {
   t.Pos (e.KeywordChars) (s.Next e.Line) e.Lines
@@ -148,6 +160,8 @@ DoScan-BuildKeyword {
     (TkError t.Pos 'Bad keyword \'' e.KeywordChars '\'')
     <DoScan <IncCol t.Pos Len e.KeywordChars> (e.Line) e.Lines>;
 }
+
+*$EENUM TkMacroDigit
 
 DoScan-Number {
   t.Pos (e.Number) (s.Next e.Line) e.Lines,
@@ -172,6 +186,8 @@ DoScan-Number {
       <IncCol t.Pos Len e.Number> (e.Line) e.Lines
     >;
 }
+
+*$EENUM TkVariable
 
 DoScan-Var {
   t.Pos (e.Variable) (s.Next e.Line) e.Lines,
@@ -215,6 +231,8 @@ DoScan-CComment {
     (TkEOF <IncCol t.Pos Len e.Comment>);
 }
 
+*$EENUM TkName
+
 DoScan-Ident {
   t.Pos (e.Ident) (s.Next e.Line) e.Lines,
       <IsIdentTail s.Next>: True =
@@ -228,6 +246,8 @@ DoScan-Ident {
     (TkName t.Pos e.Ident)
     <DoScan <IncCol t.Pos Len e.Ident> (e.Line) e.Lines>;
 }
+
+*$EENUM TkChar
 
 DoScan-Chars {
   t.Pos ('\\' e.Line) e.Lines =
@@ -300,6 +320,8 @@ DoHexDigit {
 
   /* нет образцов */ s.BadVal s.Digit = /* пусто */;
 }
+
+*$EENUM TkCompound
 
 DoScan-Compound {
   t.StartPos t.Pos (e.Compound) ('\"' e.Line) e.Lines =
