@@ -14,6 +14,7 @@ if exist main-r05.exe erase main-r05.exe
   lib\Utils ^
   lib\Refal5-Tokens ^
   lib\Refal5-AST ^
+  lib\LibraryEx ^
   Library ^
   refal05rts
 erase *.obj *.tds

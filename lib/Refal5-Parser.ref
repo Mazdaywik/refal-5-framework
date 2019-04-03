@@ -1,6 +1,9 @@
-*$FROM Utils
-$EXTERN OneOf, Builtins, Map;
+*$FROM LibraryEx
+$EXTERN OneOf, Map;
 *$EXTERN Success, Fails
+
+*$FROM Utils
+$EXTERN Builtins;
 
 *$FROM Refal5-Tokens
 *$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma

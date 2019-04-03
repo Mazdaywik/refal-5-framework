@@ -1,6 +1,6 @@
 @echo off
 set SOURCES=Main Utils Refal5-Lexer Refal5-Parser Refal5-Transformer ^
-  Refal5-Plainer Tests Refal5-Tokens Refal5-AST
+  Refal5-Plainer Tests Refal5-Tokens Refal5-AST LibraryEx
 set TARGEXE=Main-1.exe
 
 if exist ..\rsls\Main-1.exe call :TEST NUL || exit /b 1
@@ -59,7 +59,10 @@ goto :EOF
 goto :EOF
 
 :SRMAKE
-  call srmake %* -d ../lib
+  setlocal
+  set SRMAKE_FLAGS=-d ../lib
+  call srmake %*
+  endlocal
   if exist *.rasl erase *.rasl
   if exist ..\lib\*.rasl erase ..\lib\*.rasl
   if exist *.cpp erase *.cpp

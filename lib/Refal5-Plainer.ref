@@ -2,7 +2,7 @@
 *$EXTERN Extern, Function, SpecialComment, Entry, Local, RETURN, Condition
 *$EXTERN CALL-BLOCK, Brackets, Call, Compound, Number, Char, Variable
 
-*$FROM Utils
+*$FROM Library
 *$EXTERN False, True
 
 

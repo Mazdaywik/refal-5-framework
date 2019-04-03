@@ -4,7 +4,7 @@ $EXTERN Scan;
 *$FROM Refal5-Parser
 $EXTERN Parse;
 
-*$FROM Utils
+*$FROM LibraryEx
 $EXTERN Map;
 
 
