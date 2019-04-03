@@ -1,5 +1,5 @@
 *$FROM Utils
-$EXTERN OneOf, Builtins;
+$EXTERN OneOf, Builtins, Map;
 *$EXTERN Success, Fails
 
 *$FROM Refal5-Tokens
@@ -680,21 +680,19 @@ DoFilterUnitsAndFunctionNames {
 }
 
 FindSemanticsErrors {
-  (e.FuncNames) (Error t.Pos e.Message) e.ErrorsUnits =
-    (t.Pos e.Message)
-    <FindSemanticsErrors (e.FuncNames) e.ErrorsUnits>;
+  (e.FuncNames) e.ErrorsUnits
+    = <Map (refal5-parser_FindSemanticsErrors e.FuncNames) e.ErrorsUnits>;
+}
 
-  (e.FuncNames) (SpecialComment t.Pos e.Text) e.ErrorsUnits =
-    <FindSemanticsErrors (e.FuncNames) e.ErrorsUnits>;
+$ENTRY refal5-parser_FindSemanticsErrors {
+  e.FuncNames (Error t.Pos e.Message) = (t.Pos e.Message);
 
-  (e.FuncNames) (Function t.Pos (e.Name) s.Scope e.Sentences) e.ErrorsUnits =
-    <CheckSentences (e.FuncNames) (/* variables */) e.Sentences>
-    <FindSemanticsErrors (e.FuncNames) e.ErrorsUnits>;
+  e.FuncNames (SpecialComment t.Pos e.Text) = /* пусто */;
 
-  (e.FuncNames) (Extern e.Names) e.ErrorsUnits =
-    <FindSemanticsErrors (e.FuncNames) e.ErrorsUnits>;
+  e.FuncNames (Function t.Pos (e.Name) s.Scope e.Sentences) =
+    <CheckSentences (e.FuncNames) (/* variables */) e.Sentences>;
 
-  (e.FuncNames) /* кончились ошибки и юниты */ = /* пусто */
+  e.FuncNames (Extern e.Names) = /* пусто */;
 }
 
 CheckSentences {
