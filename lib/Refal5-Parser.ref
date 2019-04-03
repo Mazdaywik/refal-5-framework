@@ -2,9 +2,6 @@
 $EXTERN OneOf, Map;
 *$EXTERN Success, Fails
 
-*$FROM Utils
-$EXTERN Builtins;
-
 *$FROM Refal5-Tokens
 *$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
 *$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
@@ -12,6 +9,7 @@ $EXTERN Builtins;
 *$EXTERN TkCloseCall, TkError
 
 *$FROM Refal5-AST
+$EXTERN Builtins;
 *$EXTERN SpecialComment, Extern, Function, Entry, Local
 *$EXTERN RETURN, CALL-BLOCK, Condition
 *$EXTERN Compound, Number, Char, Variable, Brackets, Call

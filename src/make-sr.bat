@@ -1,5 +1,5 @@
 @echo off
-set SOURCES=Main Utils Refal5-Lexer Refal5-Parser Refal5-Transformer ^
+set SOURCES=Main Refal5-Lexer Refal5-Parser Refal5-Transformer ^
   Refal5-Plainer Tests Refal5-Tokens Refal5-AST LibraryEx
 set TARGEXE=Main-1.exe
 

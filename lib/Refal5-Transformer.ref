@@ -1,11 +1,9 @@
-*$FROM Utils
-$EXTERN Builtins;
-
 *$FROM LibraryEx
 $EXTERN Map, Unique;
 *$EXTERN Success, Fails
 
 *$FROM Refal5-AST
+$EXTERN Builtins;
 *$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
 *$EXTERN Condition, Brackets, Variable, Compound, Number, Char
 

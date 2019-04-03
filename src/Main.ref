@@ -1,5 +1,5 @@
 *$FROM LibraryEx
-$EXTERN ArgList, PrintLines, SaveFile;
+$EXTERN ArgList, SaveFile;
 *$EXTERN Success, Fails
 
 *$FROM Refal5-Lexer
@@ -54,6 +54,14 @@ Main {
       ('Bad command line. Expected command line syntax:')
       ('  refgo ' e.ProgName ' source.ref destination.ref')
     >;
+}
+
+PrintLines {
+  (e.Line) e.Lines =
+    <Prout e.Line>
+    <PrintLines e.Lines>;
+
+  /* пусто */ = /* ничего не печатаем */;
 }
 
 FormatErrors {

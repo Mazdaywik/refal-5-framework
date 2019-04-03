@@ -24,4 +24,17 @@
 *$EENUM RETURN, CALL-BLOCK, Condition
 *$EENUM Compound, Number, Char, Variable, Brackets, Call
 
-$ENTRY Refal5-AST { = }
+
+/**
+  <Builtins> == (e.FunctionName)*
+*/
+$ENTRY Builtins {
+  = ('+') ('-') ('*') ('/') ('%') ('?') <DoBuiltins <ListOfBuiltin>>;
+}
+
+DoBuiltins {
+  (s.Number s.Name s.Type) e.Builtins
+    = (<Explode s.Name>) <DoBuiltins e.Builtins>;
+
+  /* пусто */ = /* пусто */;
+}
