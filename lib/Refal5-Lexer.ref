@@ -70,7 +70,7 @@ DoScan {
     <DoScan-CComment t.Pos ('/*') (e.Line) e.Lines>;
 
   (s.Line 1 e.FileName) ('*$' e.Line) e.Lines =
-    (TkSpecComment '*$' e.Line)
+    (TkSpecComment (s.Line 1 e.FileName) '*$' e.Line)
     <DoScan (<Inc s.Line> 1 e.FileName) e.Lines>;
 
   (s.Line 1 e.FileName) ('*' e.Comment) e.Lines

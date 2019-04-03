@@ -41,7 +41,7 @@ DoPlain {
       <Plain e.Units>;
 
   (SpecialComment t.SrcPos e.Text) e.Units
-    = ('*' e.Text)
+    = (e.Text)
       <Plain e.Units>;
 
   /* пусто */ = /* пусто */;
