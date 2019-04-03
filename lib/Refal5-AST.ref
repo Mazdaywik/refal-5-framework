@@ -1,0 +1,27 @@
+/**
+  t.Refal5-AST ::= t.Unit*
+  t.Unit ::= t.Function | t.Extern | t.SpecialComment
+  t.Extern ::= (Extern (e.Name)*)
+  t.SpecialComment ::= (SpecialComment t.SrcPos e.Text)
+
+  t.Function ::= (Function t.SrcPos (e.Name) s.Scope t.Sentence*)
+  s.Scope ::= Entry | Local
+  t.Sentence ::= (t.Pattern (Condition t.Result t.Pattern)* e.SentenceTail)
+  e.SentenceTail ::= RETURN t.Result | CALL-BLOCK t.Result t.Sentence*
+
+  t.Pattern, t.Result ::= (t.Term*)
+  t.Term ::=
+      (Compound e.Chars*)
+    | (Number s.Number)
+    | (Char s.Char)
+    | (Variable t.SrcPos s.VarType e.Index)
+    | (Brackets t.Term*)
+    | (Call t.SrcPos (e.Function) t.Terms*)
+  s.VarType ::= 's' | 't' | 'e'
+*/
+
+*$EENUM SpecialComment, Extern, Function, Entry, Local
+*$EENUM RETURN, CALL-BLOCK, Condition
+*$EENUM Compound, Number, Char, Variable, Brackets, Call
+
+$ENTRY Refal5-AST { = }

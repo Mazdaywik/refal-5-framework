@@ -1,5 +1,6 @@
 @echo off
-set SOURCES=Main Utils Lexer Parser Transformer Plainer Tests
+set SOURCES=Main Utils Refal5-Lexer Refal5-Parser Refal5-Transformer ^
+  Refal5-Plainer Tests Refal5-Tokens Refal5-AST
 set TARGEXE=Main-1.exe
 
 if exist ..\rsls\Main-1.exe call :TEST NUL || exit /b 1
@@ -30,7 +31,9 @@ goto :EOF
 
 :TRANSFORM
   set SOURCE=%1.ref
+  if not exist %SOURCE% set SOURCE=..\lib\%SOURCE%
   mkdir out >NUL 2>NUL
+  mkdir lib >NUL 2>NUL
   set TARGET=out\%SOURCE%
   if {%2}=={NUL} set TARGET=NUL
   call :RUN_TRANSFORMER %SOURCE% %TARGET% || exit /b 1
@@ -56,9 +59,11 @@ goto :EOF
 goto :EOF
 
 :SRMAKE
-  call srmake %*
+  call srmake %* -d ../lib
   if exist *.rasl erase *.rasl
+  if exist ..\lib\*.rasl erase ..\lib\*.rasl
   if exist *.cpp erase *.cpp
+  if exist ..\lib\*.cpp erase ..\lib\*.cpp
   if exist *.obj erase *.obj
   if exist *.tds erase *.tds
 goto :EOF

@@ -2,11 +2,17 @@
 $EXTERN OneOf, Builtins;
 *$EXTERN Success, Fails
 
-*$FROM Lexer
+*$FROM Refal5-Tokens
 *$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
 *$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
 *$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
 *$EXTERN TkCloseCall, TkError
+
+*$FROM Refal5-AST
+*$EXTERN SpecialComment, Extern, Function, Entry, Local
+*$EXTERN RETURN, CALL-BLOCK, Condition
+*$EXTERN Compound, Number, Char, Variable, Brackets, Call
+
 
 *$FROM Library
 *$EXTERN True
@@ -14,28 +20,10 @@ $EXTERN OneOf, Builtins;
 
 /**
   <Parse e.Tokens>
-    == Success t.Unit*
+    == Success e.Refal5-AST
     == Fails t.Error*
 
-  t.Error ::= (t.Pos e.Message)
-  t.Unit ::= t.Function | t.Extern | t.SpecialComment
-  t.Extern ::= (Extern (e.Name)*)
-  t.SpecialComment ::= (SpecialComment t.SrcPos e.Text)
-
-  t.Function ::= (Function t.SrcPos (e.Name) s.Scope t.Sentence*)
-  s.Scope ::= Entry | Local
-  t.Sentence ::= (t.Pattern (Condition t.Result t.Pattern)* e.SentenceTail)
-  e.SentenceTail ::= RETURN t.Result | CALL-BLOCK t.Result t.Sentence*
-
-  t.Pattern, t.Result ::= (t.Term*)
-  t.Term ::=
-      (Compound e.Chars*)
-    | (Number s.Number)
-    | (Char s.Char)
-    | (Variable t.SrcPos s.VarType e.Index)
-    | (Brackets t.Term*)
-    | (Call t.SrcPos (e.Function) t.Terms*)
-  s.VarType ::= 's' | 't' | 'e'
+  t.Error ::= (t.SrcPos e.Message)
 */
 $ENTRY Parse {
   e.Tokens =
@@ -68,8 +56,6 @@ Program {
 Program-AfterUnit {
   (e.ErrorsUnits) e.Tokens = e.ErrorsUnits <Program e.Tokens>;
 }
-
-*$EENUM SpecialComment
 
 /*
   Unit = SPECIAL-COMMENT | "$EXTERN" NameList | Function.
@@ -113,8 +99,6 @@ NameList {
     ((Error t.Pos 'expected function name after $EXTERN keyword'))
     t.NextToken e.Tokens;
 }
-
-*$EENUM Extern
 
 NameList-DoNames {
   (e.Names) (e.Errors)
@@ -164,8 +148,6 @@ NameList-DoNames {
       e.Tokens
     >;
 }
-
-*$EENUM Function, Entry, Local
 
 /*
   Function = ["$ENTRY"] NAME Block.
@@ -283,8 +265,6 @@ Sentence {
   e.Tokens =
     <Sentence-AfterPattern <Pattern e.Tokens>>;
 }
-
-*$EENUM RETURN, CALL-BLOCK, Condition
 
 Sentence-AfterPattern {
   (e.Errors) t.Pattern (TkAssign t.Pos) e.Tokens =
@@ -495,8 +475,6 @@ Expression-Aux {
   s.Kind e.Tokens =
     <DoExpression s.Kind (/* errors */) (/* collected */) e.Tokens>
 }
-
-*$EENUM Compound, Number, Char, Variable, Brackets, Call
 
 DoExpression {
   s.Kind (e.Errors) (e.Collected) t.NextToken e.Tokens,

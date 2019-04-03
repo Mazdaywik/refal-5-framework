@@ -2,7 +2,7 @@
 $EXTERN Builtins, Map, Unique;
 *$EXTERN Success, Fails
 
-*$FROM Parser
+*$FROM Refal5-AST
 *$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
 *$EXTERN Condition, Brackets, Variable, Compound, Number, Char
 
@@ -11,7 +11,7 @@ $EXTERN Builtins, Map, Unique;
 
 
 /**
-  <Transform t.Unit*> == t.Unit*
+  <Transform e.Refal5-AST> == e.Refal5-AST
 */
 $ENTRY Transform {
   e.Units
@@ -162,7 +162,7 @@ BlockScopeVars {
       >;
 }
 
-*$ENUM NO-POS
+*$EENUM NO-POS
 
 $ENTRY transformer_MakeVariables {
   ('e' e.Index) = (Brackets (Variable NO-POS 'e' e.Index));

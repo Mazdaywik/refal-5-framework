@@ -1,2 +1,2 @@
 erase *.out.ref
-erase /s /q out
+erase /s /q out lib

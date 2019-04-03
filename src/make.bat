@@ -1,5 +1,6 @@
 @echo off
-set RSLS=Main+Utils+Lexer+Parser+Transformer+Plainer+Tests
+set RSLS=Main+Tests
+set LIBS=Utils+Refal5-Lexer+Refal5-Parser+Refal5-Transformer+Refal5-Plainer
 set RSLDIR=..\rsls
 set SOURCES=%RSLS:+=.ref %.ref
 
@@ -38,7 +39,7 @@ goto :EOF
 goto :EOF
 
 :RUN_TRANSFORMER
-  echo Y | refgo %RSLDIR%(%RSLS%) %* 2>__err.txt || call :FAILED
+  echo Y | refgo %RSLDIR%(%RSLS%)+..\lib(%LIBS%) %* 2>__err.txt || call :FAILED
   erase __err.txt
 goto :EOF
 

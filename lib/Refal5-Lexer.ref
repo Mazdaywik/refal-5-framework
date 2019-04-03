@@ -4,28 +4,17 @@ $EXTERN LoadFile, Inc;
 *$FROM Library
 *$EXTERN True, False
 
+*$FROM Refal5-Tokens
+*$EXTERN TkEOF, TkSpecComment, TkOpenCall, TkError
+*$EXTERN TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
+*$EXTERN TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry
+*$EXTERN TkMacroDigit, TkVariable, TkName, TkChar, TkCompound
+
+
 
 /**
   <Scan e.SourceFile> == t.Token*
-
-  t.Token ::= (s.TokType t.Pos e.TokValue)
   t.Pos ::= (s.Line s.Col e.FileName)
-
-  s.TokType ~ e.TokValue ::=
-    TkName ~ char*
-    TkCompound ~ char*
-    TkMacroDigit ~ macrodigit
-    TkChar ~ char
-    TkVariable ~ s.VarType e.VarName
-    TkOpenBracket, TkCloseBracket, TkCloseCall,
-    TkOpenBlock, TkCloseBlock ~ пусто
-    TkOpenCall ~ char* -- имя функции
-    TkComma, TkColon, TkAssign, TkSemicolon ~ пусто
-    TkExtern, TkEntry ~ пусто
-    TkSpecComment ~ char*
-    TkEOF ~ пусто
-    TkError ~ char* -- сообщение об ошибке в лексике
-  s.VarType ::= 's' | 't' | 'e'
 */
 $ENTRY Scan {
   e.FileName =
@@ -47,8 +36,6 @@ IncCol {
   (s.Line s.Col e.FileName) '+' s.Number =
     (s.Line <+ s.Col s.Number> e.FileName);
 }
-
-*$EENUM TkEOF, TkSpecComment, TkOpenCall, TkError
 
 DoScan {
   t.Pos = (TkEOF t.Pos);
@@ -120,9 +107,6 @@ IsVarType {
   's' = True; 't' = True; 'e' = True; s.Other = False;
 }
 
-*$EENUM TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
-*$EENUM TkComma, TkColon, TkAssign, TkSemicolon
-
 IsPunctuation {
   s.Punct,
       ('(' TkOpenBracket) (')' TkCloseBracket)
@@ -139,8 +123,6 @@ DoScan-Keyword {
   t.Pos (e.Line) e.Lines
     = <DoScan-BuildKeyword t.Pos ('$') (e.Line) e.Lines>;
 }
-
-*$EENUM TkExtern, TkEntry
 
 DoScan-BuildKeyword {
   t.Pos (e.KeywordChars) (s.Next e.Line) e.Lines
@@ -160,8 +142,6 @@ DoScan-BuildKeyword {
     (TkError t.Pos 'Bad keyword \'' e.KeywordChars '\'')
     <DoScan <IncCol t.Pos Len e.KeywordChars> (e.Line) e.Lines>;
 }
-
-*$EENUM TkMacroDigit
 
 DoScan-Number {
   t.Pos (e.Number) (s.Next e.Line) e.Lines,
@@ -186,8 +166,6 @@ DoScan-Number {
       <IncCol t.Pos Len e.Number> (e.Line) e.Lines
     >;
 }
-
-*$EENUM TkVariable
 
 DoScan-Var {
   t.Pos (e.Variable) (s.Next e.Line) e.Lines,
@@ -231,8 +209,6 @@ DoScan-CComment {
     (TkEOF <IncCol t.Pos Len e.Comment>);
 }
 
-*$EENUM TkName
-
 DoScan-Ident {
   t.Pos (e.Ident) (s.Next e.Line) e.Lines,
       <IsIdentTail s.Next>: True =
@@ -246,8 +222,6 @@ DoScan-Ident {
     (TkName t.Pos e.Ident)
     <DoScan <IncCol t.Pos Len e.Ident> (e.Line) e.Lines>;
 }
-
-*$EENUM TkChar
 
 DoScan-Chars {
   t.Pos ('\\' e.Line) e.Lines =
@@ -320,8 +294,6 @@ DoHexDigit {
 
   /* нет образцов */ s.BadVal s.Digit = /* пусто */;
 }
-
-*$EENUM TkCompound
 
 DoScan-Compound {
   t.StartPos t.Pos (e.Compound) ('\"' e.Line) e.Lines =

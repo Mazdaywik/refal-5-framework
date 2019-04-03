@@ -1,4 +1,4 @@
-*$FROM Parser
+*$FROM Refal5-AST
 *$EXTERN Extern, Function, SpecialComment, Entry, Local, RETURN, Condition
 *$EXTERN CALL-BLOCK, Brackets, Call, Compound, Number, Char, Variable
 
@@ -7,7 +7,7 @@
 
 
 /**
-  <Plain t.Units*> == (e.TextLine)*
+  <Plain e.Refal5-AST> == (e.TextLine)*
 */
 $ENTRY Plain {
   e.Units =

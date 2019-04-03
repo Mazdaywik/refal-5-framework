@@ -2,16 +2,16 @@
 $EXTERN ArgList, PrintLines, SaveFile;
 *$EXTERN Success, Fails
 
-*$FROM Lexer
+*$FROM Refal5-Lexer
 $EXTERN Scan;
 
-*$FROM Parser
+*$FROM Refal5-Parser
 $EXTERN Parse;
 
-*$FROM Transformer
+*$FROM Refal5-Transformer
 $EXTERN Transform;
 
-*$FROM Plainer
+*$FROM Refal5-Plainer
 $EXTERN Plain;
 
 *$FROM Tests

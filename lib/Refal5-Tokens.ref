@@ -1,0 +1,26 @@
+/**
+  t.Token ::= (s.TokType t.Pos e.TokValue)
+
+  s.TokType ~ e.TokValue ::=
+    TkName ~ char*
+    TkCompound ~ char*
+    TkMacroDigit ~ macrodigit
+    TkChar ~ char
+    TkVariable ~ s.VarType e.VarName
+    TkOpenBracket, TkCloseBracket, TkCloseCall,
+    TkOpenBlock, TkCloseBlock ~ пусто
+    TkOpenCall ~ char* -- имя функции
+    TkComma, TkColon, TkAssign, TkSemicolon ~ пусто
+    TkExtern, TkEntry ~ пусто
+    TkSpecComment ~ char*
+    TkEOF ~ пусто
+    TkError ~ char* -- сообщение об ошибке в лексике
+  s.VarType ::= 's' | 't' | 'e'
+*/
+
+*$EENUM TkEOF, TkSpecComment, TkOpenCall, TkError
+*$EENUM TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
+*$EENUM TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry
+*$EENUM TkMacroDigit, TkVariable, TkName, TkChar, TkCompound
+
+$ENTRY Refal5-Tokens { = }
