@@ -1,4 +1,6 @@
-@for %%r in ("%~dp0lib\*.ref" "%~dp0lib\windows\*.ref") do refc "%%r"
+@pushd "%~dp0lib"
+@call refcall.bat
+@popd
 
 @echo Framework for Refal-5 is prepared.
 @echo.

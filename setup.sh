@@ -1,9 +1,7 @@
 #!/bin/bash
 
 FWDIR=$(dirname $0)
-for r in ${FWDIR}/lib ${FWDIR}/lib/posix; do
-  refc ${r}
-done
+( cd $FWDIR && ./refcall.sh )
 
 echo Framework for Refal-5 is prepared.
 echo
