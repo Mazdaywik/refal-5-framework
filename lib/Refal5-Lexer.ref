@@ -182,6 +182,7 @@ DoScan-Var {
 
   t.Pos (s.Type '.' e.Index) (e.Line) e.Lines =
     (TkVariable t.Pos s.Type e.Index)
+    <CheckIndex t.Pos e.Index>
     <DoScan
       <IncCol t.Pos Len s.Type '.' e.Index> (e.Line) e.Lines
     >;
@@ -198,6 +199,27 @@ IsIdentTail {
 
       e.OtherType = False;
     }
+}
+
+CheckIndex {
+  t.Pos s.Digit e.MustBeDigits, <Type s.Digit> : 'D0' s.Digit_
+    = <CheckIndex-Digits t.Pos e.MustBeDigits>;
+
+  t.Pos s.Letter e.Any, <Type s.Letter> : 'L' s.st s.Letter_ = /* нет ошибок */;
+
+  t.Pos s.Other e.Any
+    = (TkError t.Pos 'index must start with a letter or a number');
+
+  t.Pos /* пусто */ = (TkError t.Pos 'empty variable index');
+}
+
+CheckIndex-Digits {
+  t.Pos /* пусто */ = /* нет ошибок */;
+
+  t.Pos s.Digit e.MustBeDigits, <Type s.Digit> : 'D0' s.Digit_
+    = <CheckIndex-Digits t.Pos e.MustBeDigits>;
+
+  t.Pos s.Unexpected e.Tail = (TkError t.Pos 'index must be whole number');
 }
 
 DoScan-CComment {
