@@ -18,7 +18,13 @@ $EXTERN LoadFile, Inc;
 */
 $ENTRY Scan {
   e.FileName =
-    <DoScan (1 1 e.FileName) <LoadFile e.FileName>>;
+    <DoScan (1 1 e.FileName) <SkipBOM <LoadFile e.FileName>>>;
+}
+
+SkipBOM {
+  ('\xEF\xBB\xBF' e.FirstLine) e.Lines = (e.FirstLine) e.Lines;
+
+  e.Lines = e.Lines;
 }
 
 IncLine {
