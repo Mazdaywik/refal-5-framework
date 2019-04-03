@@ -11,15 +11,15 @@
   <Apply t.Closure e.Arg> == e.Res
 
   t.Closure ::=
-      s.FUNCTION
+      s.WORD
     | (t.Closure e.Bounded)
   e.Arg, e.Res, e.Bounded ::= e.AnyExpr
 */
 $ENTRY Apply {
   s.Fn e.Argument = <Mu s.Fn e.Argument>;
 
-  (t.Closure e.Bounded) e.Argument =
-    <Apply t.Closure e.Bounded e.Argument>;
+  (t.Closure e.Bounded) e.Argument
+    = <Apply t.Closure e.Bounded e.Argument>;
 }
 
 
@@ -42,10 +42,10 @@ $ENTRY Map {
   t.Accum′ ::= t.Accum
 */
 $ENTRY Reduce {
-  t.Fn t.Acc t.Next e.Tail =
-    <Reduce
-      t.Fn <Apply t.Fn t.Acc t.Next> e.Tail
-    >;
+  t.Fn t.Acc t.Next e.Tail
+    = <Reduce
+        t.Fn <Apply t.Fn t.Acc t.Next> e.Tail
+      >;
 
   t.Fn t.Acc = t.Acc;
 }
@@ -58,19 +58,18 @@ $ENTRY Reduce {
   t.Accum′ ::= t.Accum
 */
 $ENTRY MapAccum {
-  t.Fn t.Acc e.Tail =
-    <DoMapAccum t.Fn t.Acc () e.Tail>;
+  t.Fn t.Acc e.Tail = <DoMapAccum t.Fn t.Acc () e.Tail>;
 }
 
 DoMapAccum {
-  t.Fn t.Acc (e.Scanned) t.Next e.Tail =
-    <DoMapAccum
-      t.Fn
-      <MapAccum-AddScanned
-        <Apply t.Fn t.Acc t.Next> (e.Scanned)
-      >
-      e.Tail
-    >;
+  t.Fn t.Acc (e.Scanned) t.Next e.Tail
+    = <DoMapAccum
+        t.Fn
+        <MapAccum-AddScanned
+          <Apply t.Fn t.Acc t.Next> (e.Scanned)
+        >
+        e.Tail
+      >;
 
   t.Fn t.Acc (e.Scanned) = t.Acc e.Scanned;
 }
