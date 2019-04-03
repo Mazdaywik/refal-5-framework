@@ -90,7 +90,7 @@ DoScan {
     <DoScan-Ident t.Pos ('<' s.StartIdent) (e.Line) e.Lines>;
 
   t.Pos ('<' s.Arithm e.Line) e.Lines,
-      '+-*/%': e.Arithms-B s.Arithm e.Arithms-E =
+      '+-*/%?': e.Arithms-B s.Arithm e.Arithms-E =
     (TkOpenCall t.Pos s.Arithm)
     <DoScan <IncCol t.Pos Len '<' s.Arithm> (e.Line) e.Lines>;
 
