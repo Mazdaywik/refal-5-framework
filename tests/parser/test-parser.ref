@@ -1,0 +1,71 @@
+*$FROM Refal5-Lexer
+$EXTERN Scan;
+
+*$FROM Refal5-Parser
+$EXTERN Parse;
+
+*$FROM Utils
+$EXTERN Map;
+
+
+$ENTRY Go {
+  , <Arg 1>
+  : {
+      /* пусто */
+        = <Prout 'Usage:'>
+          <Prout '\trefgo test-parser+... filename.OK.ref'>
+          <Prout '\trefgo test-parser+... filename.BAD-SYNTAX.ref'>;
+
+      e.FileName
+        , <CheckExist e.FileName> : /* пусто */
+        , <Lower e.FileName>
+        : {
+            e.Name '.ok.ref' = <Parse-OK e.FileName>;
+            e.Name '.bad-syntax.ref' = <Parse-BAD e.FileName>;
+            e.Other = <Prout e.FileName ': skip'>;
+          };
+    }
+}
+
+CheckExist {
+  e.FileName, <ExistFile e.FileName> : True = /* пусто */;
+  e.FileName = <Prout 'FILE ' e.FileName ' DOES NOT EXIST'> <Exit 1>;
+}
+
+Parse-OK {
+  e.FileName
+    , <Parse <Scan e.FileName>>
+    : {
+        Success e.AST = <Prout e.FileName ': parsing successful'>;
+
+        Fails e.Errors
+          = <Prout e.FileName ': PARSING FAILED, ERRORS:'>
+            <PrintErrors e.Errors>
+            <Exit 1>;
+      }
+}
+
+Parse-BAD {
+  e.FileName
+    , <Parse <Scan e.FileName>>
+    : {
+        Success e.AST =
+          <Prout e.FileName ': PARSER MISSED ERRORS!'>
+          <Prout 'AST:'>
+          <Map Prout e.AST>
+          <Exit 1>;
+
+        Fails e.Errors
+          = <Prout e.FileName ': errors was expected, found by parser:'>
+            <PrintErrors e.Errors>;
+      }
+}
+
+PrintErrors {
+  e.Messages = <Map test-parser_PrintError e.Messages>;
+}
+
+$ENTRY test-parser_PrintError {
+  ((s.Line s.Col e.FileName) e.Message)
+    = <Prout e.FileName ':' <Symb s.Line> ':' <Symb s.Col> ':' e.Message>;
+}
