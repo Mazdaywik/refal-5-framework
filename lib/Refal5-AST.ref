@@ -11,9 +11,9 @@
 
   t.Pattern, t.Result ::= (t.Term*)
   t.Term ::=
-      (Compound e.Chars*)
-    | (Number s.Number)
-    | (Char s.Char)
+      (Symbol Word t.SrcPos e.Chars*)
+    | (Symbol Number s.Number)
+    | (Symbol Char s.Char)
     | (Variable t.SrcPos s.VarType e.Index)
     | (Brackets t.Term*)
     | (Call t.SrcPos (e.Function) t.Terms*)
@@ -22,7 +22,7 @@
 
 *$EENUM SpecialComment, Extern, Function, Entry, Local
 *$EENUM RETURN, CALL-BLOCK, Condition
-*$EENUM Compound, Number, Char, Variable, Brackets, Call
+*$EENUM Symbol, Word, Number, Char, Variable, Brackets, Call
 
 
 /**

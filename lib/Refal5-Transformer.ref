@@ -5,7 +5,7 @@ $EXTERN Map, Unique;
 *$FROM Refal5-AST
 $EXTERN Builtins;
 *$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
-*$EXTERN Condition, Brackets, Variable, Compound, Number, Char
+*$EXTERN Condition, Brackets, Variable, Symbol, Word, Number, Char
 
 *$FROM Library
 *$EXTERN True, False
@@ -402,9 +402,7 @@ DoPatternSteps {
 }
 
 HardItem {
-  (e.BoundEVariables) (Compound e.Compound) = True;
-  (e.BoundEVariables) (Number s.Number) = True;
-  (e.BoundEVariables) (Char s.Char) = True;
+  (e.BoundEVariables) (Symbol s.Type e.Info) = True;
 
   (e.BoundEVariables) (Variable t.SrcPos 's' e.Index) = True;
   (e.BoundEVariables) (Variable t.SrcPos 't' e.Index) = True;
@@ -422,7 +420,7 @@ $ENTRY transformer_BindBrackets {
 
 DoBindBrackets {
   (t.MultiBracket e.Scanned) t.Symbol e.Tail
-    , <Symbol t.Symbol> : True
+    , t.Symbol : (Symbol s.Type e.Info)
     = <DoBindBrackets (t.MultiBracket e.Scanned t.Symbol) e.Tail>;
 
   (t.MultiBracket e.Scanned) (Variable t.SrcPos s.Type e.Index) e.Tail
@@ -817,11 +815,4 @@ DoNewName {
 
         e.Names = ((e.NewName) e.Names) e.NewName;
       };
-}
-
-Symbol {
-  (Compound e.Chars) = True;
-  (Number s.Number) = True;
-  (Char s.Char) = True;
-  t.Other = False;
 }

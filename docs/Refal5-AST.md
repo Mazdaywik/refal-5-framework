@@ -20,9 +20,9 @@
 
     t.Pattern, t.Result ::= (t.Term*)
     t.Term ::=
-        (Compound e.Chars*)
-      | (Number s.Number)
-      | (Char s.Char)
+        (Symbol Word t.SrcPos e.Chars*)
+      | (Symbol Number s.Number)
+      | (Symbol Char s.Char)
       | (Variable t.SrcPos s.VarType e.Index)
       | (Brackets t.Term*)
       | (Call t.SrcPos (e.Function) t.Terms*)
@@ -43,8 +43,9 @@
   частью (`RETURN`), либо вызовом блока (`CALL-BLOCK`).
 * `t.Result` — результатное выражение.
 * `t.Term` — терм выражения, может быть:
-  - `Compound` — словом (составным символом),
-  - `Number` — макроцифрой,
+  - `Symbol Word` — словом (составным символом),
+  - `Symbol Number` — макроцифрой,
+  - `Symbol Char` — литерой,
   - `Variable` — переменной,
   - `Brackets` — скобочным термом,
   - `Call` — вызовом функции (недопустим внутри образца).

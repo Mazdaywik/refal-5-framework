@@ -1,6 +1,6 @@
 *$FROM Refal5-AST
 *$EXTERN Extern, Function, SpecialComment, Entry, Local, RETURN, Condition
-*$EXTERN CALL-BLOCK, Brackets, Call, Compound, Number, Char, Variable
+*$EXTERN CALL-BLOCK, Brackets, Call, Symbol, Word, Number, Char, Variable
 
 *$FROM Library
 *$EXTERN False, True
@@ -218,7 +218,7 @@ AppendTerm {
 }
 
 InlineTerm {
-  (s.Type e.Value) = <PlainByType s.Type e.Value>;
+  (s.Type e.Value) = <PlainTerm s.Type e.Value>;
 
   ';' = ';';
 }
@@ -247,14 +247,14 @@ MultilineTerm-Prefix {
             (e.Indent '>' e.Suffix);
 
         (s.Type e.Value)
-          = (e.Prefix <PlainByType s.Type e.Value> e.Suffix);
+          = (e.Prefix <PlainTerm s.Type e.Value> e.Suffix);
       };
 }
 
-PlainByType {
-  Compound e.Chars = <PlainCompound e.Chars>;
-  Number s.Number = <PlainNumber s.Number>;
-  Char s.Char = <PlainChar s.Char>;
+PlainTerm {
+  Symbol Word t.SrcPos e.Chars = <PlainCompound e.Chars>;
+  Symbol Number s.Number = <PlainNumber s.Number>;
+  Symbol Char s.Char = <PlainChar s.Char>;
   Variable t.SrcPos s.Type e.Index = <PlainVariable t.SrcPos s.Type e.Index>;
   Call t.SrcPos (e.Function) e.Arg = <PlainCall t.SrcPos (e.Function) e.Arg>;
   Brackets e.Expr = <PlainBrackets e.Expr>;

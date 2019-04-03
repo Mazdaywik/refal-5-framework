@@ -12,7 +12,7 @@ $EXTERN OneOf, Map;
 $EXTERN Builtins;
 *$EXTERN SpecialComment, Extern, Function, Entry, Local
 *$EXTERN RETURN, CALL-BLOCK, Condition
-*$EXTERN Compound, Number, Char, Variable, Brackets, Call
+*$EXTERN Symbol, Word, Number, Char, Variable, Brackets, Call
 
 
 *$FROM Library
@@ -483,22 +483,22 @@ DoExpression {
     {
       (TkName t.Pos e.Name) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Compound e.Name)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Word t.Pos e.Name)) e.Tokens
         >;
 
       (TkCompound t.Pos e.Symbols) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Compound e.Symbols)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Word t.Pos e.Symbols)) e.Tokens
         >;
 
       (TkMacroDigit t.Pos s.Number) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Number s.Number)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Number s.Number)) e.Tokens
         >;
 
       (TkChar t.Pos s.Char) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Char s.Char)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Char s.Char)) e.Tokens
         >;
 
       (TkVariable t.Pos s.VarType e.Index) =
