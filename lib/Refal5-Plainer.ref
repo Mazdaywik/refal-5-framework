@@ -338,7 +338,10 @@ PlainCall {
   t.SrcPos (e.Function) e.Expr = '<' e.Function ' ' <InlineExpr e.Expr> '>'
 }
 
-InlineExpr {
+/**
+  <InlineExpr t.Term*> == s.CHAR*
+*/
+$ENTRY InlineExpr {
   t.Term e.Expr = <DoInlineExpr (<InlineTerm t.Term>) e.Expr>;
 
   /* пусто */ = /* пусто */;
