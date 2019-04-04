@@ -42,6 +42,8 @@ GetFunctionNames {
   (e.Names) /* пусто */ = (e.Names);
 }
 
+$ENTRY refal5-transformer_RemovePos { (t.Pos e.Name) = (e.Name) }
+
 DoTransform {
   s.FnMode (e.Names) (Function t.SrcPos (e.Name) s.Scope e.Sentences) e.Units
     , <Mu s.FnMode (e.Names) t.SrcPos (e.Name) s.Scope e.Sentences>

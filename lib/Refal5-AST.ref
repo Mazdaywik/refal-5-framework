@@ -1,7 +1,7 @@
 /**
   t.Refal5-AST ::= t.Unit*
   t.Unit ::= t.Function | t.Extern | t.SpecialComment
-  t.Extern ::= (Extern (e.Name)*)
+  t.Extern ::= (Extern (t.SrcPos e.Name)*)
   t.SpecialComment ::= (SpecialComment t.SrcPos e.Text)
 
   t.Function ::= (Function t.SrcPos (e.Name) s.Scope t.Sentence*)

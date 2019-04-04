@@ -66,7 +66,7 @@ PlainExtern {
 }
 
 DoExtern {
-  (e.OutLine) (e.NextName) e.Names
+  (e.OutLine) (t.Pos e.NextName) e.Names
     , <CommaOrSemicolon e.Names>: e.SEP
     , e.OutLine e.NextName e.SEP: e.NewOutLine
     , <LongLine e.NewOutLine>
@@ -85,7 +85,7 @@ DoExtern {
 }
 
 CommaOrSemicolon {
-  (e.NextName) e.Names = ', ';
+  (t.Pos e.NextName) e.Names = ', ';
   /* пусто */ = ';';
 }
 

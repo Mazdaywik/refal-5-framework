@@ -93,7 +93,7 @@ Unit {
 */
 NameList {
   (TkName t.Pos e.Name) e.Tokens =
-    <NameList-DoNames ((e.Name)) (/* errors */) e.Tokens>;
+    <NameList-DoNames ((t.Pos e.Name)) (/* errors */) e.Tokens>;
 
   t.NextToken e.Tokens,
       t.NextToken: (s.Type t.Pos e.Value) =
@@ -104,7 +104,7 @@ NameList {
 NameList-DoNames {
   (e.Names) (e.Errors)
   (TkComma t.CommaPos) (TkName t.NamePos e.Name) e.Tokens =
-    <NameList-DoNames (e.Names (e.Name)) (e.Errors) e.Tokens>;
+    <NameList-DoNames (e.Names (t.NamePos e.Name)) (e.Errors) e.Tokens>;
 
   (e.Names) (e.Errors) (TkSemicolon t.Pos) e.Tokens =
     ((Extern e.Names) e.Errors) e.Tokens;
@@ -675,10 +675,14 @@ DoFilterUnitsAndFunctionNames {
 
   (Extern e.ExternalNames) e.ErrorsUnits (e.Names) =
     (Extern e.ExternalNames)
-    <DoFilterUnitsAndFunctionNames e.ErrorsUnits (e.Names e.ExternalNames)>;
+    <DoFilterUnitsAndFunctionNames
+      e.ErrorsUnits (e.Names <Map refal5-parser_RemovePos e.ExternalNames>)
+    >;
 
   /* кончились юниты и ошибки */ (e.Names) = (e.Names);
 }
+
+$ENTRY refal5-parser_RemovePos { (t.Pos e.Name) = (e.Name) }
 
 FindSemanticsErrors {
   (e.FuncNames) e.ErrorsUnits
