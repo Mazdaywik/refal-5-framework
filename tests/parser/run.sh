@@ -1,6 +1,6 @@
 #!/bin/bash
 
-run_test_aux() {
+run_test() {
   echo Passing $1...
   if
     echo Y | refgo test-parser+Refal5-Parser+Refal5-Lexer+LibraryEx $1 2>__err.txt
@@ -13,16 +13,12 @@ run_test_aux() {
   rm -f __err.txt
 }
 
-run_test_aux.BAD-SYNTAX() 
-
-source ../c-plus-plus.conf.sh
-
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
   for s in *.ref; do
-    run_test $s
+    run_test ${s}
   done
 else
   for s in $*; do
-    run_test $s
+    run_test ${s}
   done
 fi
