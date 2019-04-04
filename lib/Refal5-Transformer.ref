@@ -5,7 +5,7 @@ $EXTERN Map, Unique;
 *$FROM Refal5-AST
 $EXTERN Builtins;
 *$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
-*$EXTERN Condition, Brackets, Variable, Symbol, Word, Number, Char
+*$EXTERN Condition, Brackets, Variable, Symbol
 
 *$FROM Library
 *$EXTERN True, False
