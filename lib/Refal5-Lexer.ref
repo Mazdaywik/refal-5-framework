@@ -21,6 +21,13 @@ $ENTRY Scan {
     <DoScan (1 1 e.FileName) <SkipBOM <LoadFile e.FileName>>>;
 }
 
+/**
+  <ScanString-FromPos t.InitPos e.String> == e.Tokens
+*/
+$ENTRY ScanString-FromPos {
+  t.Pos e.String = <DoScan t.Pos e.String>;
+}
+
 SkipBOM {
   ('\xEF\xBB\xBF' e.FirstLine) e.Lines = (e.FirstLine) e.Lines;
 
