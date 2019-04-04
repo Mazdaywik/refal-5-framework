@@ -25,7 +25,7 @@ $ENTRY Scan {
   <ScanString-FromPos t.InitPos e.String> == e.Tokens
 */
 $ENTRY ScanString-FromPos {
-  t.Pos e.String = <DoScan t.Pos e.String>;
+  t.Pos e.String = <DoScan t.Pos (e.String)>;
 }
 
 SkipBOM {
