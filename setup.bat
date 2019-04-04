@@ -1,5 +1,5 @@
 @pushd "%~dp0lib"
-@call refcall.bat
+@call refcall.cmd
 @popd
 
 @echo Framework for Refal-5 is prepared.
