@@ -3,6 +3,7 @@ $EXTERN OneOf, Map;
 *$EXTERN Success, Fails
 
 *$FROM Refal5-Tokens
+$EXTERN TokName;
 *$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
 *$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
 *$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
@@ -613,28 +614,6 @@ UnexpectedToken {
 
   (s.Type t.Pos e.Value) e.Expected =
     (Error t.Pos 'unexpected ' <TokName s.Type> ', expected ' e.Expected);
-}
-
-TokName {
-  TkName = 'identifier';
-  TkCompound = 'compound symbol';
-  TkMacroDigit = 'number';
-  TkChar = 'character';
-  TkVariable = 'variable';
-  TkOpenBracket = '\'(\'';
-  TkCloseBracket = '\')\'';
-  TkOpenBlock = '\'{\'';
-  TkCloseBlock = '\'}\'';
-  TkOpenCall = '\'<\'';
-  TkCloseCall = '\'>\'';
-  TkComma = '\',\'';
-  TkColon = '\':\'';
-  TkAssign = '\'=\'';
-  TkSemicolon = '\';\'';
-  TkExtern = '$EXTERN';
-  TkEntry = '$ENTRY';
-  TkSpecComment = '\'*$\'-comment';
-  TkEOF = 'end of file';
 }
 
 

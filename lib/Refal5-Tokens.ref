@@ -23,4 +23,27 @@
 *$EENUM TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry
 *$EENUM TkMacroDigit, TkVariable, TkName, TkChar, TkCompound
 
-$ENTRY Refal5-Tokens { = }
+/**
+  <TokName s.TokType> == s.CHAR*
+*/
+$ENTRY TokName {
+  TkName = 'identifier';
+  TkCompound = 'compound symbol';
+  TkMacroDigit = 'number';
+  TkChar = 'character';
+  TkVariable = 'variable';
+  TkOpenBracket = '\'(\'';
+  TkCloseBracket = '\')\'';
+  TkOpenBlock = '\'{\'';
+  TkCloseBlock = '\'}\'';
+  TkOpenCall = '\'<\'';
+  TkCloseCall = '\'>\'';
+  TkComma = '\',\'';
+  TkColon = '\':\'';
+  TkAssign = '\'=\'';
+  TkSemicolon = '\';\'';
+  TkExtern = '$EXTERN';
+  TkEntry = '$ENTRY';
+  TkSpecComment = '\'*$\'-comment';
+  TkEOF = 'end of file';
+}
