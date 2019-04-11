@@ -665,7 +665,25 @@ $ENTRY refal5-parser_RemovePos { (t.Pos e.Name) = (e.Name) }
 
 FindSemanticsErrors {
   (e.FuncNames) e.ErrorsUnits
-    = <Map (refal5-parser_FindSemanticsErrors e.FuncNames) e.ErrorsUnits>;
+    = <Map (refal5-parser_FindSemanticsErrors e.FuncNames) e.ErrorsUnits>
+      <FindRedefinitions e.ErrorsUnits>;
+}
+
+FindRedefinitions {
+  e.ErrorsUnits-B
+  (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1)
+  e.ErrorsUnits-E
+  (Function t.Pos2 (e.Name) s.Scope2 e.Sentences2)
+    = <FindRedefinitions
+        e.ErrorsUnits-B
+        (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1)
+        e.ErrorsUnits-E
+      >
+      (t.Pos2 'Function ' e.Name ' is redefined');
+
+  e.ErrorsUnits t.Other = <FindRedefinitions e.ErrorsUnits>;
+
+  /* пусто */ = /* пусто */;
 }
 
 $ENTRY refal5-parser_FindSemanticsErrors {
