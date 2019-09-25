@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FWDIR=$(dirname $0)
-( cd $FWDIR && ./refcall.sh )
+FWDIR=$(cd $(dirname $0) && pwd)
+( cd $FWDIR/lib && ./refcall.sh )
 
 echo Framework for Refal-5 is prepared.
 echo
