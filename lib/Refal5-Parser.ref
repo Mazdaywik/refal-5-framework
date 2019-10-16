@@ -749,6 +749,9 @@ ExtractCheckable-Term {
   (Call t.Pos (e.Name) e.Expr) =
     (Call t.Pos e.Name) <ExtractCheckable-Expr e.Expr>;
 
+  /* CheckSentences может повторно вызываться к своему результату */
+  (Call t.Pos e.Name) = (Call t.Pos e.Name);
+
   t.OtherTerm = /* здесь нет переменных */;
 }
 

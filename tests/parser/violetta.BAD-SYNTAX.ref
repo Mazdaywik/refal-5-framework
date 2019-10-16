@@ -1,0 +1,19 @@
+$ENTRY Example {
+  s.Symbol e.Expr, <Type s.Symbol>: {
+    'D0' =
+      <PROUT s.Symbol 'is digit'>
+      <ExaMple e.Expr>;
+
+    'L' s.Subtype =
+      <PrOuT s.Symbol 'is letter'>
+      <example e.Expr>;
+
+    e.Other =
+      <UNDECLARED_FUNC s.Symbol 'is something else'>
+      <E e.Expr>;
+  };
+
+  = ;
+
+  e.Other = <Prout 'Wrong argument'>;
+}
