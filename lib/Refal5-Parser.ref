@@ -28,8 +28,9 @@ $EXTERN Builtins;
   t.Error ::= (t.SrcPos e.Message)
 */
 $ENTRY Parse {
-  e.Tokens =
-    <Semantics <Program  e.Tokens>>;
+  t.FirstToken e.Tokens
+    , t.FirstToken : (s.Type t.Pos e.Value)
+    = <Semantics t.Pos <Program t.FirstToken e.Tokens>>;
 }
 
 /*
@@ -618,47 +619,64 @@ UnexpectedToken {
 
 
 /*
- <Semantics t.ErrorUnit*>
+ <Semantics t.FirstTokenPos t.ErrorUnit*>
     == Success t.Unit*
     == Fails t.Error*
 */
 Semantics {
-  e.ErrorsUnits,
-      <FilterUnitsAndFunctionNames e.ErrorsUnits>: e.Units (e.Functions),
-      <FindSemanticsErrors (e.Functions) e.ErrorsUnits>:
-    {
-      /* пусто */ = Success e.Units;
+  t.FirstTokenPos e.ErrorsUnits
+      , <FilterUnitsAndFunctionNames e.ErrorsUnits>
+      : e.Units (e.Functions) s.HasEntry
+      , <FindSemanticsErrors (e.Functions) e.ErrorsUnits>
+        <NoEntryError t.FirstTokenPos s.HasEntry>
+      : {
+          /* пусто */ = Success e.Units;
 
-      e.Errors = Fails e.Errors;
-    };
+          e.Errors = Fails e.Errors;
+        };
+}
+
+NoEntryError {
+  t.Pos NoEntry = (t.Pos 'No $ENTRY functions in a file');
+  t.Pos HasEntry = /* пусто */;
 }
 
 FilterUnitsAndFunctionNames {
   e.ErrorsUnits =
     <DoFilterUnitsAndFunctionNames
-      e.ErrorsUnits (<Builtins>)
+      NoEntry e.ErrorsUnits (<Builtins>)
     >;
 }
 
 DoFilterUnitsAndFunctionNames {
-  (Error t.Pos e.Message) e.ErrorsUnits (e.Names) =
-    <DoFilterUnitsAndFunctionNames e.ErrorsUnits (e.Names)>;
+  s.HasEntry (Error t.Pos e.Message) e.ErrorsUnits (e.Names) =
+    <DoFilterUnitsAndFunctionNames s.HasEntry e.ErrorsUnits (e.Names)>;
 
-  (SpecialComment t.Pos e.Text) e.ErrorsUnits (e.Names) =
+  s.HasEntry (SpecialComment t.Pos e.Text) e.ErrorsUnits (e.Names) =
     (SpecialComment t.Pos e.Text)
-    <DoFilterUnitsAndFunctionNames e.ErrorsUnits (e.Names)>;
+    <DoFilterUnitsAndFunctionNames s.HasEntry e.ErrorsUnits (e.Names)>;
 
+  s.HasEntry
   (Function t.Pos (e.Name) s.Scope e.Sentences) e.ErrorsUnits (e.Names) =
     (Function t.Pos (e.Name) s.Scope e.Sentences)
-    <DoFilterUnitsAndFunctionNames e.ErrorsUnits (e.Names (e.Name))>;
-
-  (Extern e.ExternalNames) e.ErrorsUnits (e.Names) =
-    (Extern e.ExternalNames)
     <DoFilterUnitsAndFunctionNames
-      e.ErrorsUnits (e.Names <Map refal5-parser_RemovePos e.ExternalNames>)
+      <UpdateHasEntry s.HasEntry s.Scope>
+      e.ErrorsUnits (e.Names (e.Name))
     >;
 
-  /* кончились юниты и ошибки */ (e.Names) = (e.Names);
+  s.HasEntry (Extern e.ExternalNames) e.ErrorsUnits (e.Names) =
+    (Extern e.ExternalNames)
+    <DoFilterUnitsAndFunctionNames
+      s.HasEntry e.ErrorsUnits (e.Names <Map refal5-parser_RemovePos e.ExternalNames>)
+    >;
+
+  s.HasEntry /* кончились юниты и ошибки */ (e.Names) = (e.Names) s.HasEntry;
+}
+
+UpdateHasEntry {
+  HasEntry s.Scope = HasEntry;
+  s.HasEntry Entry = HasEntry;
+  s.HasEntry Local = s.HasEntry;
 }
 
 $ENTRY refal5-parser_RemovePos { (t.Pos e.Name) = (e.Name) }
