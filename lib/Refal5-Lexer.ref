@@ -4,7 +4,7 @@ $EXTERN LoadFile, Inc;
 *$FROM Library
 *$EXTERN True, False
 
-*$FROM Refal5-Tokens
+*$FROM R5FW-Parser-Defs
 *$EXTERN TkEOF, TkSpecComment, TkOpenCall, TkError
 *$EXTERN TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
 *$EXTERN TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry

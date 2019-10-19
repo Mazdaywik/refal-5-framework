@@ -2,15 +2,12 @@
 $EXTERN OneOf, Map;
 *$EXTERN Success, Fails
 
-*$FROM Refal5-Tokens
-$EXTERN TokName;
+*$FROM R5FW-Parser-Defs
+$EXTERN Builtins, TokName;
 *$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
 *$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
 *$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
 *$EXTERN TkCloseCall, TkError
-
-*$FROM R5FW-Parser-Defs
-$EXTERN Builtins;
 *$EXTERN SpecialComment, Extern, Function, Entry, Local
 *$EXTERN RETURN, CALL-BLOCK, Condition
 *$EXTERN Symbol, Word, Number, Char, Variable, Brackets, Call
