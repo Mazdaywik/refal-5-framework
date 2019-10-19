@@ -7,7 +7,6 @@ if exist main-r05.exe erase main-r05.exe
 ..\..\Refal-05\bin\refal05c ^
   out\Main ^
   lib\R5FW-Parser ^
-  lib\Refal5-Parser ^
   lib\R5FW-Plainer ^
   out\Tests ^
   lib\R5FW-Transformer ^
@@ -19,5 +18,5 @@ erase *.obj *.tds
 ren main.exe main-r05.exe
 main-r05.exe _tests_
 main-r05.exe Main.ref out/Main.r05.ref
-main-r05.exe ../lib/Refal5-Parser.ref out/Parser.r05.ref
+main-r05.exe ../lib/R5FW-Parser.ref out/Parser.r05.ref
 endlocal

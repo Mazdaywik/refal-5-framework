@@ -3,10 +3,7 @@ $EXTERN ArgList, SaveFile;
 *$EXTERN Success, Fails
 
 *$FROM R5FW-Parser
-$EXTERN Scan;
-
-*$FROM Refal5-Parser
-$EXTERN Parse;
+$EXTERN Scan, Parse;
 
 *$FROM R5FW-Transformer
 $EXTERN Transform;

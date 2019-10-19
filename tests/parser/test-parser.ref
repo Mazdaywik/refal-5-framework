@@ -1,8 +1,5 @@
 *$FROM R5FW-Parser
-$EXTERN Scan;
-
-*$FROM Refal5-Parser
-$EXTERN Parse;
+$EXTERN Scan, Parse;
 
 *$FROM LibraryEx
 $EXTERN Map;
