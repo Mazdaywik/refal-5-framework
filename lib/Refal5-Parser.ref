@@ -175,8 +175,23 @@ ParseFunction {
 
 Function-AfterBlock {
   t.Pos (e.Name) s.Scope (e.Errors) (e.Sentences) e.Tokens =
-    (e.Errors (Function t.Pos (e.Name) s.Scope e.Sentences))
+    (
+      e.Errors
+      <CheckBuiltinRedefine t.Pos e.Name>
+      (Function t.Pos (e.Name) s.Scope e.Sentences)
+    )
     e.Tokens;
+}
+
+CheckBuiltinRedefine {
+  t.Pos e.Name
+    , <Builtins>
+    : {
+        e.Names-B (e.Name) e.Names-E
+          = (Error t.Pos 'Redefinition of builtin function ' e.Name);
+
+        e.Names = /* пусто */;
+    }
 }
 
 
