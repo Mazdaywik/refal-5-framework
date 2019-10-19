@@ -8,7 +8,7 @@ $EXTERN Scan;
 *$FROM Refal5-Parser
 $EXTERN Parse;
 
-*$FROM Refal5-Transformer
+*$FROM R5FW-Transformer
 $EXTERN Transform;
 
 *$FROM R5FW-Plainer
