@@ -233,7 +233,9 @@
     }
 
     $ENTRY reduce_example_HashOne {
-      s.Hash s.Number = <Add <Mul s.Hash 37> s.Number>;
+      s.Hash s.Number
+        , <Add <Mul s.Hash 37> s.Number> : e.Overflow s.LastDigit
+        = s.LastDigit;
     }
 
 ### Функция `MapAccum`
