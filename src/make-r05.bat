@@ -6,7 +6,7 @@ call ..\..\Refal-05\c-plus-plus.conf.bat
 if exist main-r05.exe erase main-r05.exe
 ..\..\Refal-05\bin\refal05c ^
   out\Main ^
-  lib\Refal5-Lexer ^
+  lib\R5FW-Parser ^
   lib\Refal5-Parser ^
   lib\R5FW-Plainer ^
   out\Tests ^

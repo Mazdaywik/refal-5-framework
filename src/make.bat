@@ -1,6 +1,6 @@
 @echo off
 set RSLS=Main+Tests
-set LIBS=Refal5-Lexer+Refal5-Parser+R5FW-Transformer+R5FW-Plainer+LibraryEx+R5FW-Parser-Defs
+set LIBS=R5FW-Parser+Refal5-Parser+R5FW-Transformer+R5FW-Plainer+LibraryEx+R5FW-Parser-Defs
 set RSLDIR=..\rsls
 set SOURCES=%RSLS:+=.ref %.ref
 

@@ -2,7 +2,7 @@
 $EXTERN ArgList, SaveFile;
 *$EXTERN Success, Fails
 
-*$FROM Refal5-Lexer
+*$FROM R5FW-Parser
 $EXTERN Scan;
 
 *$FROM Refal5-Parser
