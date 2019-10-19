@@ -252,7 +252,7 @@ MultilineTerm-Prefix {
 }
 
 PlainTerm {
-  Symbol Word t.SrcPos e.Chars = <PlainCompound e.Chars>;
+  Symbol Word e.Chars = <PlainCompound e.Chars>;
   Symbol Number s.Number = <PlainNumber s.Number>;
   Symbol Char s.Char = <PlainChar s.Char>;
   Variable t.SrcPos s.Type e.Index = <PlainVariable t.SrcPos s.Type e.Index>;

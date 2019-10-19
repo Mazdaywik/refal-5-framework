@@ -11,7 +11,7 @@
 
   t.Pattern, t.Result ::= (t.Term*)
   t.Term ::=
-      (Symbol Word t.SrcPos e.Chars*)
+      (Symbol Word e.Chars*)
     | (Symbol Number s.Number)
     | (Symbol Char s.Char)
     | (Variable t.SrcPos s.VarType e.Index)

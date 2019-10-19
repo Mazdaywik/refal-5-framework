@@ -500,12 +500,12 @@ DoExpression {
     {
       (TkName t.Pos e.Name) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Word t.Pos e.Name)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Word e.Name)) e.Tokens
         >;
 
       (TkCompound t.Pos e.Symbols) =
         <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Word t.Pos e.Symbols)) e.Tokens
+          s.Kind (e.Errors) (e.Collected (Symbol Word e.Symbols)) e.Tokens
         >;
 
       (TkMacroDigit t.Pos s.Number) =
