@@ -12,7 +12,7 @@ if exist main-r05.exe erase main-r05.exe
   out\Tests ^
   lib\R5FW-Transformer ^
   lib\Refal5-Tokens ^
-  lib\Refal5-AST ^
+  lib\R5FW-Parser-Defs ^
   lib\LibraryEx ^
   Library ^
   refal05rts

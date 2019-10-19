@@ -2,7 +2,7 @@
 $EXTERN Map, Unique;
 *$EXTERN Success, Fails
 
-*$FROM Refal5-AST
+*$FROM R5FW-Parser-Defs
 $EXTERN Builtins;
 *$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
 *$EXTERN Condition, Brackets, Variable, Symbol

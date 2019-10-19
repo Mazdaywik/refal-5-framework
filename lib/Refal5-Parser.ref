@@ -9,7 +9,7 @@ $EXTERN TokName;
 *$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
 *$EXTERN TkCloseCall, TkError
 
-*$FROM Refal5-AST
+*$FROM R5FW-Parser-Defs
 $EXTERN Builtins;
 *$EXTERN SpecialComment, Extern, Function, Entry, Local
 *$EXTERN RETURN, CALL-BLOCK, Condition

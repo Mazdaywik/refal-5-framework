@@ -1,6 +1,6 @@
 @echo off
 set SOURCES=Main Refal5-Lexer Refal5-Parser R5FW-Transformer ^
-  R5FW-Plainer Tests Refal5-Tokens Refal5-AST LibraryEx
+  R5FW-Plainer Tests Refal5-Tokens R5FW-Parser-Defs LibraryEx
 set TARGEXE=Main-1.exe
 
 if exist ..\rsls\Main-1.exe call :TEST NUL || exit /b 1

@@ -12,4 +12,4 @@
 могут появиться узлы, позиции которых (значения поля `t.SrcPos`) имеют значение
 `NO-POS`.
 
-Тип `e.Refal5-AST` описан в [`Refal5-AST`](Refal5-AST.md).
+Тип `e.Refal5-AST` описан в [`R5FW-Parser-Defs`](R5FW-Parser-Defs.md).
