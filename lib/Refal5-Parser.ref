@@ -651,6 +651,8 @@ Semantics {
         };
 }
 
+*$ENUM NoEntry, HasEntry
+
 NoEntryError {
   t.Pos NoEntry = (t.Pos 'No $ENTRY functions in a file');
   t.Pos HasEntry = /* пусто */;
