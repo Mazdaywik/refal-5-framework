@@ -5,7 +5,7 @@ $EXTERN ArgList, SaveFile;
 *$FROM Refal5-Lexer
 $EXTERN Scan;
 
-*$FROM Refal5-Parser
+*$FROM R5FW-Parser
 $EXTERN Parse;
 
 *$FROM R5FW-Transformer
