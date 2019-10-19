@@ -11,10 +11,6 @@ $EXTERN Builtins, TokName;
 *$EXTERN TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
 *$EXTERN TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry
 *$EXTERN TkMacroDigit, TkVariable, TkName, TkChar, TkCompound
-*$EXTERN TkSpecComment, TkExtern, TkEntry, TkSemicolon, TkEOF, TkName, TkComma
-*$EXTERN TkOpenBlock, TkCloseBlock, TkAssign, TkColon, TkCompound, TkMacroDigit
-*$EXTERN TkChar, TkVariable, TkOpenBracket, TkOpenCall, TkCloseBracket
-*$EXTERN TkCloseCall, TkError
 *$EXTERN SpecialComment, Extern, Function, Entry, Local
 *$EXTERN RETURN, CALL-BLOCK, Condition
 *$EXTERN Symbol, Word, Number, Char, Variable, Brackets, Call
