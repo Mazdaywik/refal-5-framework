@@ -11,7 +11,7 @@ $EXTERN Parse;
 *$FROM Refal5-Transformer
 $EXTERN Transform;
 
-*$FROM Refal5-Plainer
+*$FROM R5FW-Plainer
 $EXTERN Plain;
 
 *$FROM Tests
