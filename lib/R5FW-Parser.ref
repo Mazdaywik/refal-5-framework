@@ -1179,7 +1179,7 @@ CheckResult {
         <CheckResult (e.FuncNames) (e.Variables) e.Items>;
 
       e.Names =
-        (t.Pos 'function ' e.Name ' not declared')
+        (t.Pos 'function ' e.Name ' is not declared')
         <CheckResult (e.FuncNames) (e.Variables) e.Items>;
     };
 
@@ -1190,7 +1190,7 @@ CheckResult {
         <CheckResult (e.FuncNames) (e.Variables) e.Items>;
 
       e.Vars =
-        (t.Pos 'variable ' s.Type '.' e.Index ' not declared')
+        (t.Pos 'variable ' s.Type '.' e.Index ' is not declared')
         <CheckResult (e.FuncNames) (e.Variables) e.Items>;
     };
 
