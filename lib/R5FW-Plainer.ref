@@ -275,6 +275,8 @@ IsIdent {
   s.Initial e.Tail
     , <Type s.Initial>: 'L' s.SubType s.Initial
     = <DoIsIdent (s.Initial) e.Tail>;
+
+  e.Other = False;
 }
 
 DoIsIdent {
