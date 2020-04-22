@@ -80,7 +80,7 @@ makeTOC.localizedHide = "Скрыть";
 аргумента. Запись `<Inc s.X>` компактнее, чем `<Add s.X 1>`, поэтому они
 добавлены в библиотеку.
 
-#### Функция `ArgList`
+### Функция `ArgList`
 
     <ArgList> == (e.Arg)+
     e.Arg ::= s.CHAR*
@@ -91,7 +91,7 @@ makeTOC.localizedHide = "Скрыть";
 чем последний, возвращается пустая строка), функция `ArgList` перечисляет
 аргументы до первого пустого.
 
-#### Функции `Trim`, `Trim-L`, `Trim-R`
+### Функции `Trim`, `Trim-L`, `Trim-R`
 
     <Trim s.CHAR*> == s.CHAR*
     <Trim-L s.CHAR*> == s.CHAR*
@@ -102,23 +102,24 @@ makeTOC.localizedHide = "Скрыть";
 пустого пространства относятся пробелы, табуляции (`\t`), возвраты каретки
 (`\r`) и переводы строк (`\n`).
 
-#### Функция `OneOf`
+### Функция `OneOf`
 
     <OneOf t.Elem e.SampleElems> == True | False
 
 Возвращает истину, если `t.Elem` присутствует в `e.SampleElems` и ложь
 в противоположном случае.
 
-#### Функция `Unique`
+### Функция `Unique`
 
     <Unique t.Item*> == t.Item*
 
 Удаляет дублирующиеся термы из аргумента.
 
 
-### Функции высшего порядка
+Функции высшего порядка
+-----------------------
 
-#### Замыкание (`t.Closure`), функция `Apply`
+### Замыкание (`t.Closure`), функция `Apply`
 
     t.Closure ::=
         s.WORD
@@ -216,7 +217,7 @@ makeTOC.localizedHide = "Скрыть";
       (e.Line) = (e.Line); /* оставляем */
     }
 
-## Функция `Reduce`
+### Функция `Reduce`
 
     <Reduce t.Closure t.Accum t.Item*> == t.Accum′
 
