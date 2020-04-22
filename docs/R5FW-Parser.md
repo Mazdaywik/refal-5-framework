@@ -1,6 +1,14 @@
 Библиотека `R5FW-Parser`
 ========================
 
+<div id="toc"></div>
+<script src="toc.js"></script>
+<script>
+makeTOC.localizedHeader = "Содержание"
+makeTOC.localizedShow = "Показать";
+makeTOC.localizedHide = "Скрыть";
+</script>
+
 Лексический анализатор для Рефала-5
 -----------------------------------
 

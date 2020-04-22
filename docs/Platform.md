@@ -1,6 +1,14 @@
 Библиотека `Platform`
 =====================
 
+<div id="toc"></div>
+<script src="toc.js"></script>
+<script>
+makeTOC.localizedHeader = "Содержание"
+makeTOC.localizedShow = "Показать";
+makeTOC.localizedHide = "Скрыть";
+</script>
+
 Библиотека содержит платформенно-зависимые функции и константы. Предназначена
 для упрощения написания переносимых программ.
 

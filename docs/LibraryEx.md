@@ -1,6 +1,14 @@
 Библиотека `LibraryEx`
 ======================
 
+<div id="toc"></div>
+<script src="toc.js"></script>
+<script>
+makeTOC.localizedHeader = "Содержание"
+makeTOC.localizedShow = "Показать";
+makeTOC.localizedHide = "Скрыть";
+</script>
+
 Библиотека удобных вспомогательных функций для Рефала-5.
 
 Средства библиотеки можно условно разделить на две группы: утилитарные функции
