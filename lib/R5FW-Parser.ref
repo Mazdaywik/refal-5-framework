@@ -389,136 +389,161 @@ DoScan-Compound-HandleEscape {
   t.Error ::= (t.SrcPos e.Message)
 */
 $ENTRY Parse {
-  t.FirstToken e.Tokens
-    , t.FirstToken : (s.Type t.Pos e.Value)
-    = <Semantics t.Pos <Program t.FirstToken e.Tokens>>;
+  e.Tokens
+    , e.Tokens : (s.1 t.Pos e.2) e.3
+    , <Program () e.Tokens ()> : (Program e.Units) (TkEOF t.4) (e.Errors)
+    = <Semantics t.Pos e.Units e.Errors>;
 }
 
 /*
-  Program = Unit* EOF.
+  Program = empty | Program Unit.
 
-  <Program e.Tokens> == t.ErrorUnit*
+  <Program (e.Tree) e.Tokens (e.Errors)>
+    == (Program t.Unit*) e.Tokens (e.Errors)
 
-  t.ErrorUnit ::= (Error t.Pos e.Message) | t.Unit
+  e.Errors ::= (Error t.Pos e.Message)*
 */
 Program {
-  t.NextToken e.Tokens,
-      t.NextToken: (s.Type t.Pos e.Value),
-      <OneOf s.Type TkSpecComment TkExtern TkEntry TkName TkSemicolon>: True =
-    <Program-AfterUnit <Unit t.NextToken e.Tokens>>;
+  () e.Tokens (e.Errors)
+    = <Program ((Program /* пусто */)) e.Tokens (e.Errors)>;
 
-  (TkEOF t.Pos) = /* всё */;
+  ((Program e.Units)) (Unit t.Unit) e.Tokens (e.Errors)
+    = <Program ((Program e.Units t.Unit)) e.Tokens (e.Errors)>;
 
-  t.Unexpected e.Tokens,
-      t.Unexpected: (s.Type t.Pos e.Value) =
-    <UnexpectedToken
-      t.Unexpected '$EXTERN, $ENTRY, function name or special comment'
-    >
-    <Program e.Tokens>;
+  ((Program e.Units)) (s.Type t.Pos e.Value) e.Tokens (e.Errors)
+    , <StartOfUnit> : e.1 s.Type e.2
+    = <Program
+        ((Program e.Units))
+        <Unit () (s.Type t.Pos e.Value) e.Tokens (e.Errors)>
+      >;
+
+  ((Program e.Units)) (TkSemicolon t.Pos) e.Tokens (e.Errors)
+    = <Program ((Program e.Units)) e.Tokens (e.Errors)>;
+
+  ((Program e.Units)) (TkEOF t.Pos) (e.Errors)
+    = (Program e.Units) (TkEOF t.Pos) (e.Errors);
+
+  ((Program e.Units)) t.Unexpected e.Tokens (e.Errors)
+    = <Program
+        ((Program e.Units)) e.Tokens
+        (
+          e.Errors
+          <UnexpectedToken
+            t.Unexpected '$EXTERN, $ENTRY, function name or special comment'
+          >
+        )
+      >
 }
 
-Program-AfterUnit {
-  (e.ErrorsUnits) e.Tokens = e.ErrorsUnits <Program e.Tokens>;
+StartOfUnit {
+  = TkSpecComment TkExtern TkEntry TkName TkSemicolon
 }
 
 /*
-  Unit = SPECIAL-COMMENT | "$EXTERN" NameList | Function.
+  Unit = SPECIAL-COMMENT | "$EXTERN" NameList ";" | Function | ";".
 
-  <Unit e.Tokens> == (t.ErrorUnit*) e.Tokens
+  <Unit (e.Tree) e.Tokens (e.Errors)> == (Unit t.Unit)? e.Tokens (e.Errors)
 */
 Unit {
-  t.NextToken e.Tokens,
-      t.NextToken:
-    {
-      (TkSpecComment t.Pos e.Text) =
-        ((SpecialComment t.Pos e.Text)) e.Tokens;
+  () (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = (Unit (SpecialComment t.Pos e.Text)) e.Tokens (e.Errors);
 
-      (TkExtern t.Pos) =
-        <NameList e.Tokens>;
+  () (TkExtern t.Pos) e.Tokens (e.Errors)
+    = <Unit (Extern) <NameList () e.Tokens (e.Errors)>>;
 
-      (TkSemicolon t.Pos) =
-        (/* игнорируем */) e.Tokens;
+  (Extern) (NameList e.Names) e.Tokens (e.Errors)
+    = <Unit (Extern (NameList e.Names)) e.Tokens (e.Errors)>;
 
-      (s.Type t.Pos e.Value),
-          <OneOf s.Type TkEntry TkName>: True =
-        <ParseFunction t.NextToken e.Tokens>;
+  (Extern) (TkSemicolon t.Pos) e.Tokens (e.Errors)
+    = e.Tokens
+      (e.Errors (Error t.Pos 'No names after $EXTERN'));
 
-      /* других типов быть не должно */
-    }
+  (Extern) t.Unexpected e.Tokens (e.Errors)
+    , t.Unexpected : (s.1 t.Pos e.2)
+    = t.Unexpected e.Tokens
+      (e.Errors (Error t.Pos 'Can\'t parse names after $EXTERN'));
+
+  (Extern (NameList e.Names)) (TkSemicolon t.Pos) e.Tokens (e.Errors)
+    = (Unit (Extern e.Names)) e.Tokens (e.Errors);
+
+  (Extern (NameList e.Names)) t.NextToken e.Tokens (e.Errors)
+    , t.NextToken : (s.1 t.Pos e.2)
+    = (Unit (Extern e.Names)) t.NextToken e.Tokens
+      (e.Errors (Error t.Pos 'missed semicolon'));
+
+  () (Function e.Function) e.Tokens (e.Errors)
+    = (Unit (Function e.Function)) e.Tokens (e.Errors);
+
+  () (s.Type t.Pos e.Value) e.Tokens (e.Errors)
+    , TkName TkEntry : e.1 s.Type e.2
+    = <Unit () <ParseFunction () (s.Type t.Pos e.Value) e.Tokens (e.Errors)>>;
+
+  () (TkSemicolon t.Pos) e.Tokens (e.Errors) = e.Tokens (e.Errors);
 }
 
 *$ENUM Error
 
 /*
-  NameList = NAME { "," NAME } ";".
+  NameList = NAME | NameList "," NAME.
 
-  <NameList e.Tokens> == (t.ErrorUnit*) e.Tokens
+  <NameList (e.Tree) e.Tokens (e.Errors)>
+    == (NameList e.Names)? e.Tokens (e.Errors)
+
+  e.Names ::= (t.Pos e.Name)*
 */
 NameList {
-  (TkName t.Pos e.Name) e.Tokens =
-    <NameList-DoNames ((t.Pos e.Name)) (/* errors */) e.Tokens>;
+  () (TkName t.Pos e.Name) e.Tokens (e.Errors)
+    = <NameList ((NameList (t.Pos e.Name))) e.Tokens (e.Errors)>;
 
-  t.NextToken e.Tokens,
-      t.NextToken: (s.Type t.Pos e.Value) =
-    ((Error t.Pos 'expected function name after $EXTERN keyword'))
-    t.NextToken e.Tokens;
-}
+  () t.Unexpected e.Tokens (e.Errors)
+    , t.Unexpected : (s.1 t.Pos e.2)
+    = t.Unexpected e.Tokens
+      (e.Errors (Error t.Pos 'expected function name after $EXTERN keyword'));
 
-NameList-DoNames {
-  (e.Names) (e.Errors)
-  (TkComma t.CommaPos) (TkName t.NamePos e.Name) e.Tokens =
-    <NameList-DoNames (e.Names (t.NamePos e.Name)) (e.Errors) e.Tokens>;
+  ((NameList e.Names)) (TkComma t.1) (TkName t.Pos e.Name) e.Tokens (e.Errors)
+    = <NameList ((NameList e.Names (t.Pos e.Name))) e.Tokens (e.Errors)>;
 
-  (e.Names) (e.Errors) (TkSemicolon t.Pos) e.Tokens =
-    ((Extern e.Names) e.Errors) e.Tokens;
+  ((NameList e.Names)) (TkComma t.Pos) e.Tokens (e.Errors)
+    = <NameList
+        ((NameList e.Names)) e.Tokens
+        (e.Errors (Error t.Pos 'expected name after comma'))
+      >;
 
-  (e.Names) (e.Errors) (TkComma t.Pos) e.Tokens =
-    <NameList-DoNames
-      (e.Names)
-      (e.Errors (Error t.Pos 'expected name after comma'))
-      e.Tokens
-    >;
+  ((NameList e.Names))
+  (TkName t.NamePos e.Name) (TkOpenBlock t.BracketPos) e.Tokens
+  (e.Errors)
+    = (NameList e.Names)
+      (TkName t.NamePos e.Name) (TkOpenBlock t.BracketPos) e.Tokens
+      (
+        e.Errors
+        (Error t.NamePos 'missed semicolon after previous $EXTERN declaration')
+      );
 
-  (e.Names) (e.Errors)
-  (TkName t.NamePos e.Name) (TkOpenBlock t.BracketPos) e.Tokens =
-    (
-      (Extern e.Names)
-      e.Errors
-      (Error t.NamePos 'missed semicolon after previous $EXTERN declaration')
-    )
-    (TkName t.NamePos e.Name) (TkOpenBlock t.BracketPos) e.Tokens;
+  ((NameList e.Names)) (TkName t.Pos e.Name) e.Tokens (e.Errors)
+    = <NameList
+        ((NameList e.Names (t.Pos e.Name))) e.Tokens
+        (e.Errors (Error t.Pos 'missed comma after external name'))
+      >;
 
-  (e.Names) (e.Errors) (TkName t.Pos e.Name) e.Tokens =
-    <NameList-DoNames
-      (e.Names)
-      (e.Errors (Error t.Pos 'missed comma after external name'))
-      e.Tokens
-    >;
-
-  (e.Names) (e.Errors) t.NextToken e.Tokens,
-      t.NextToken: (s.Type t.Pos e.Value),
-      <OneOf s.Type TkExtern TkEntry TkSpecComment TkEOF>: True =
-    (
-      (Extern e.Names)
-      e.Errors
-      (Error t.Pos 'missed semicolon')
-    )
-    t.NextToken e.Tokens;
-
-  (e.Names) (e.Errors) t.NextToken e.Tokens =
-    <NameList-DoNames
-      (e.Names)
-      (e.Errors <UnexpectedToken t.NextToken 'comma or semicolon'>)
-      e.Tokens
-    >;
+  ((NameList e.Names)) e.Tokens (e.Errors)
+    = (NameList e.Names) e.Tokens (e.Errors);
 }
 
 /*
   Function = ["$ENTRY"] NAME Block.
 
-  <Function e.Tokens> == (e.Errors t.FunctionUnit) e.Tokens
+  <ParseFunction (e.Tree) e.Tokens (e.Errors)>
+    == t.Function e.Tokens (e.Errors)
+
+  <ParseFunction-Old e.Tokens> == (e.Errors t.FunctionUnit) e.Tokens
 */
 ParseFunction {
+  () e.Tokens (e.Errors)
+    , <ParseFunction-Old e.Tokens> : (e.ParseErrors t.Function) e.TokensTail
+    = t.Function e.TokensTail (e.Errors e.ParseErrors);
+}
+
+ParseFunction-Old {
   (TkEntry t.EntryPos) (TkName t.NamePos e.Name) e.Tokens =
     <Function-AfterBlock
       t.EntryPos (e.Name) Entry <Block e.Tokens>
@@ -530,7 +555,10 @@ ParseFunction {
     >;
 
   (TkEntry t.Pos) e.Tokens =
-    ((Error t.Pos '$ENTRY without function name, skipped'))
+    (
+      (Error t.Pos '$ENTRY without function name, skipped')
+      (Function t.Pos (/* пусто */) Entry /* пусто */)
+    )
     e.Tokens;
 }
 
