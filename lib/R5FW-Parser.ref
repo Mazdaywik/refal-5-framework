@@ -395,9 +395,19 @@ DoScan-Compound-HandleEscape {
 $ENTRY Parse {
   t.First e.Tokens
     , t.First : (s.Type t.Pos e.Value)
-    , <Program () t.First e.Tokens ()>
+    , <Program () <SeparateLexerErrors t.First e.Tokens ()>>
     : (Program e.Units) (TkEOF t.EOFPos) (e.Errors)
     = <SemanticCheck t.Pos e.Units (e.Errors)>;
+}
+
+SeparateLexerErrors {
+  (TkError t.Pos e.Message) e.Tokens (e.Errors)
+    = <SeparateLexerErrors e.Tokens (e.Errors (Error t.Pos e.Message))>;
+
+  t.ValidToken e.Tokens (e.Errors)
+    = t.ValidToken <SeparateLexerErrors e.Tokens (e.Errors)>;
+
+  /* кончились токены */ (e.Errors) = (e.Errors);
 }
 
 /*
@@ -952,8 +962,6 @@ Unbalanced {
 
 
 UnexpectedToken {
-  (TkError t.Pos e.Message) e.Expected = (Error t.Pos e.Message);
-
   (s.Type t.Pos e.Value) e.Expected
     = (Error t.Pos 'unexpected ' <TokName s.Type> ', expected ' e.Expected);
 }
