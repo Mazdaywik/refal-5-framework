@@ -1,5 +1,5 @@
 *$FROM LibraryEx
-$EXTERN LoadFile, Inc, Map;
+$EXTERN LoadFile, Inc, Map, MapAccum;
 *$EXTERN Success, Fails
 
 *$FROM Library
@@ -389,10 +389,10 @@ DoScan-Compound-HandleEscape {
   t.Error ::= (t.SrcPos e.Message)
 */
 $ENTRY Parse {
-  e.Tokens
-    , e.Tokens : (s.1 t.Pos e.2) e.3
-    , <Program () e.Tokens ()> : (Program e.Units) (TkEOF t.4) (e.Errors)
-    = <Semantics t.Pos e.Units e.Errors>;
+  t.First e.Tokens
+    , t.First : (s.1 t.Pos e.2)
+    , <Program () t.First e.Tokens ()> : (Program e.Units) (TkEOF t.4) (e.Errors)
+    = <SemanticCheck t.Pos e.Units (e.Errors)>;
 }
 
 /*
@@ -958,21 +958,25 @@ UnexpectedToken {
 
 
 /*
- <Semantics t.FirstTokenPos t.ErrorUnit*>
+ <SemanticCheck t.FirstTokenPos e.Program (e.Errors)>
     == Success t.Unit*
     == Fails t.Error*
 */
-Semantics {
-  t.FirstTokenPos e.ErrorsUnits
-      , <FilterUnitsAndFunctionNames e.ErrorsUnits>
-      : e.Units (e.Functions) s.HasEntry
-      , <FindSemanticsErrors (e.Functions) e.ErrorsUnits>
+SemanticCheck {
+  t.FirstTokenPos e.Program (e.ParseErrors)
+      , <GetFuncNames e.Program> : s.HasEntry e.Functions
+      , <Map r5fw-parser_FormatError e.ParseErrors>
+        <FindSemanticsErrors (e.Functions <Builtins>) e.Program>
         <NoEntryError t.FirstTokenPos s.HasEntry>
       : {
-          /* пусто */ = Success e.Units;
+          /* пусто */ = Success e.Program;
 
           e.Errors = Fails e.Errors;
         };
+}
+
+$ENTRY r5fw-parser_FormatError {
+  (Error t.Pos e.Message) = (t.Pos e.Message);
 }
 
 *$ENUM NoEntry, HasEntry
@@ -982,36 +986,18 @@ NoEntryError {
   t.Pos HasEntry = /* пусто */;
 }
 
-FilterUnitsAndFunctionNames {
-  e.ErrorsUnits =
-    <DoFilterUnitsAndFunctionNames
-      NoEntry e.ErrorsUnits (<Builtins>)
-    >;
+GetFuncNames {
+  e.Units = <MapAccum r5fw-parser_GetNames NoEntry e.Units>;
 }
 
-DoFilterUnitsAndFunctionNames {
-  s.HasEntry (Error t.Pos e.Message) e.ErrorsUnits (e.Names) =
-    <DoFilterUnitsAndFunctionNames s.HasEntry e.ErrorsUnits (e.Names)>;
+$ENTRY r5fw-parser_GetNames {
+  s.HasEntry (SpecialComment t.Pos e.Text) = s.HasEntry;
 
-  s.HasEntry (SpecialComment t.Pos e.Text) e.ErrorsUnits (e.Names) =
-    (SpecialComment t.Pos e.Text)
-    <DoFilterUnitsAndFunctionNames s.HasEntry e.ErrorsUnits (e.Names)>;
+  s.HasEntry (Function t.Pos (e.Name) s.Scope e.Sentences)
+    = <UpdateHasEntry s.HasEntry s.Scope> (e.Name);
 
-  s.HasEntry
-  (Function t.Pos (e.Name) s.Scope e.Sentences) e.ErrorsUnits (e.Names) =
-    (Function t.Pos (e.Name) s.Scope e.Sentences)
-    <DoFilterUnitsAndFunctionNames
-      <UpdateHasEntry s.HasEntry s.Scope>
-      e.ErrorsUnits (e.Names (e.Name))
-    >;
-
-  s.HasEntry (Extern e.ExternalNames) e.ErrorsUnits (e.Names) =
-    (Extern e.ExternalNames)
-    <DoFilterUnitsAndFunctionNames
-      s.HasEntry e.ErrorsUnits (e.Names <Map refal5-parser_RemovePos e.ExternalNames>)
-    >;
-
-  s.HasEntry /* кончились юниты и ошибки */ (e.Names) = (e.Names) s.HasEntry;
+  s.HasEntry (Extern e.ExternalNames)
+    = s.HasEntry <Map r5fw-parser_RemovePos e.ExternalNames>;
 }
 
 UpdateHasEntry {
@@ -1020,50 +1006,42 @@ UpdateHasEntry {
   s.HasEntry Local = s.HasEntry;
 }
 
-$ENTRY refal5-parser_RemovePos { (t.Pos e.Name) = (e.Name) }
+$ENTRY r5fw-parser_RemovePos { (t.Pos e.Name) = (e.Name) }
 
 FindSemanticsErrors {
-  (e.FuncNames) e.ErrorsUnits
-    = <Map (refal5-parser_FindSemanticsErrors e.FuncNames) e.ErrorsUnits>
-      <FindRedefinitions e.ErrorsUnits>;
+  (e.FuncNames) e.Units
+    = <Map (r5fw-parser_FindSemanticsErrors e.FuncNames) e.Units>
+      <FindRedefinitions e.Units>;
 }
 
 FindRedefinitions {
-  e.ErrorsUnits-B
-  (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1)
-  e.ErrorsUnits-E
+  e.Units-B (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1) e.Units-E
   (Function t.Pos2 (e.Name) s.Scope2 e.Sentences2)
     = <FindRedefinitions
-        e.ErrorsUnits-B
-        (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1)
-        e.ErrorsUnits-E
+        e.Units-B (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1) e.Units-E
       >
       (t.Pos2 'Function ' e.Name ' is redefined');
 
-  e.ErrorsUnits t.Other = <FindRedefinitions e.ErrorsUnits>;
+  e.Units t.Other = <FindRedefinitions e.Units>;
 
   /* пусто */ = /* пусто */;
 }
 
-$ENTRY refal5-parser_FindSemanticsErrors {
-  e.FuncNames (Error t.Pos e.Message) = (t.Pos e.Message);
-
+$ENTRY r5fw-parser_FindSemanticsErrors {
   e.FuncNames (SpecialComment t.Pos e.Text) = /* пусто */;
 
-  e.FuncNames (Function t.Pos (e.Name) s.Scope e.Sentences) =
-    <CheckSentences (e.FuncNames) (/* variables */) e.Sentences>;
+  e.FuncNames (Function t.Pos (e.Name) s.Scope e.Sentences)
+    = <CheckSentences
+        (e.FuncNames) (/* variables */)
+        <ExtractCheckable-Sentences e.Sentences>
+      >;
 
   e.FuncNames (Extern e.Names) = /* пусто */;
 }
 
 CheckSentences {
-  (e.FuncNames) (e.Variables) (e.Sentence) e.Sentences =
-    <CheckSentence
-      (e.FuncNames) (e.Variables) <ExtractCheckable e.Sentence>
-    >
-    <CheckSentences (e.FuncNames) (e.Variables) e.Sentences>;
-
-  (e.FuncNames) (e.Variables) /* всё */ = /* всё */;
+  (e.FuncNames) (e.Variables) e.Sentences
+    = <Map (r5fw-parser_CheckSentence (e.FuncNames) (e.Variables)) e.Sentences>;
 }
 
 ExtractCheckable {
@@ -1108,14 +1086,11 @@ ExtractCheckable-Term {
   (Call t.Pos (e.Name) e.Expr) =
     (Call t.Pos e.Name) <ExtractCheckable-Expr e.Expr>;
 
-  /* CheckSentences может повторно вызываться к своему результату */
-  (Call t.Pos e.Name) = (Call t.Pos e.Name);
-
   t.OtherTerm = /* здесь нет переменных */;
 }
 
-CheckSentence {
-  (e.FuncNames) (e.Variables) (e.PatternItems) e.Tail =
+$ENTRY r5fw-parser_CheckSentence {
+  (e.FuncNames) (e.Variables) ((e.PatternItems) e.Tail) =
     <CheckSentence-Tail
       (e.FuncNames) (e.Variables e.PatternItems) e.Tail
     >;
