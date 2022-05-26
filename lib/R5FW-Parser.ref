@@ -336,48 +336,52 @@ DoHexDigit {
 }
 
 DoScan-Compound {
-  t.StartPos t.Pos (e.Compound) ('\"' e.Line) e.Lines =
-    (TkCompound t.StartPos e.Compound)
-    <DoScan <IncCol t.Pos> (e.Line) e.Lines>;
+  t.StartPos t.Pos (e.Compound) ('\"' e.Line) e.Lines
+    = (TkCompound t.StartPos e.Compound)
+      <DoScan <IncCol t.Pos> (e.Line) e.Lines>;
 
-  t.StartPos t.Pos (e.Compound) ('\\' e.Line) e.Lines =
-    <DoScan-Compound-HandleEscape
-      t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines
-    >;
+  t.StartPos t.Pos (e.Compound) ('\\' e.Line) e.Lines
+    = <DoScan-Compound-HandleEscape
+        t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines
+      >;
 
-  t.StartPos t.Pos (e.Compound) (s.Char e.Line) e.Lines =
-    <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound s.Char) (e.Line) e.Lines>;
+  t.StartPos t.Pos (e.Compound) (s.Char e.Line) e.Lines
+    = <DoScan-Compound
+        t.StartPos <IncCol t.Pos> (e.Compound s.Char) (e.Line) e.Lines
+      >;
 
-  t.StartPos t.Pos (e.Compound) () e.Lines =
-    (TkError t.Pos 'Unclosed \" - double quote')
-    <DoScan <IncLine t.Pos> e.Lines>;
+  t.StartPos t.Pos (e.Compound) () e.Lines
+    = (TkError t.Pos 'Unclosed \" - double quote')
+      <DoScan <IncLine t.Pos> e.Lines>;
 }
 
 DoScan-Compound-HandleEscape {
-  t.StartPos t.Pos (e.Compound) (s.Escaped e.Line) e.Lines,
-      <SimpleEscapedChar s.Escaped>: s.Char =
-    <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound s.Char) (e.Line) e.Lines>;
+  t.StartPos t.Pos (e.Compound) (s.Escaped e.Line) e.Lines
+    , <SimpleEscapedChar s.Escaped> : s.Char
+    = <DoScan-Compound
+        t.StartPos <IncCol t.Pos> (e.Compound s.Char) (e.Line) e.Lines
+       >;
 
-  t.StartPos t.Pos (e.Compound) ('x' s.Hex1 s.Hex2 e.Line) e.Lines,
-      <HexDigit s.Hex1>: s.Num1,
-      <HexDigit s.Hex2>: s.Num2 =
-    <DoScan-Compound
-      t.StartPos <IncCol t.Pos Len 'x' s.Hex1 s.Hex2>
-      (e.Compound <Chr <+ <* s.Num1 16> s.Num2>>) (e.Line) e.Lines
-    >;
+  t.StartPos t.Pos (e.Compound) ('x' s.Hex1 s.Hex2 e.Line) e.Lines
+    , <HexDigit s.Hex1> : s.Num1
+    , <HexDigit s.Hex2> : s.Num2
+    = <DoScan-Compound
+        t.StartPos <IncCol t.Pos Len 'x' s.Hex1 s.Hex2>
+        (e.Compound <Chr <+ <* s.Num1 16> s.Num2>>) (e.Line) e.Lines
+      >;
 
-  t.StartPos t.Pos (e.Compound) ('x' e.Line) e.Lines =
-    (TkError t.Pos 'After \\x must be two hex digits')
-    <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
+  t.StartPos t.Pos (e.Compound) ('x' e.Line) e.Lines
+    = (TkError t.Pos 'After \\x must be two hex digits')
+      <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
 
-  t.StartPos t.Pos (e.Compound) (s.Other e.Line) e.Lines =
-    (TkError t.Pos 'Bad escape sequence \\' s.Other)
-    <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
+  t.StartPos t.Pos (e.Compound) (s.Other e.Line) e.Lines
+    = (TkError t.Pos 'Bad escape sequence \\' s.Other)
+      <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
 
-  t.StartPos t.Pos (e.Compound) () e.Lines =
-    (TkError t.Pos 'Unexpected \\ at end of compound literal')
-    (TkCompound t.StartPos e.Compound)
-    <DoScan <IncLine t.Pos> e.Lines>;
+  t.StartPos t.Pos (e.Compound) () e.Lines
+    = (TkError t.Pos 'Unexpected \\ at end of compound literal')
+      (TkCompound t.StartPos e.Compound)
+      <DoScan <IncLine t.Pos> e.Lines>;
 }
 
 
@@ -390,8 +394,9 @@ DoScan-Compound-HandleEscape {
 */
 $ENTRY Parse {
   t.First e.Tokens
-    , t.First : (s.1 t.Pos e.2)
-    , <Program () t.First e.Tokens ()> : (Program e.Units) (TkEOF t.4) (e.Errors)
+    , t.First : (s.Type t.Pos e.Value)
+    , <Program () t.First e.Tokens ()>
+    : (Program e.Units) (TkEOF t.EOFPos) (e.Errors)
     = <SemanticCheck t.Pos e.Units (e.Errors)>;
 }
 
@@ -949,11 +954,10 @@ Unbalanced {
 
 
 UnexpectedToken {
-  (TkError t.Pos e.Message) e.Expected =
-    (Error t.Pos e.Message);
+  (TkError t.Pos e.Message) e.Expected = (Error t.Pos e.Message);
 
-  (s.Type t.Pos e.Value) e.Expected =
-    (Error t.Pos 'unexpected ' <TokName s.Type> ', expected ' e.Expected);
+  (s.Type t.Pos e.Value) e.Expected
+    = (Error t.Pos 'unexpected ' <TokName s.Type> ', expected ' e.Expected);
 }
 
 
@@ -964,15 +968,15 @@ UnexpectedToken {
 */
 SemanticCheck {
   t.FirstTokenPos e.Program (e.ParseErrors)
-      , <GetFuncNames e.Program> : s.HasEntry e.Functions
-      , <Map r5fw-parser_FormatError e.ParseErrors>
-        <FindSemanticsErrors (e.Functions <Builtins>) e.Program>
-        <NoEntryError t.FirstTokenPos s.HasEntry>
-      : {
-          /* пусто */ = Success e.Program;
+    , <GetFuncNames e.Program> : s.HasEntry e.Functions
+    , <Map r5fw-parser_FormatError e.ParseErrors>
+      <FindSemanticsErrors (e.Functions <Builtins>) e.Program>
+      <NoEntryError t.FirstTokenPos s.HasEntry>
+    : {
+        /* пусто */ = Success e.Program;
 
-          e.Errors = Fails e.Errors;
-        };
+        e.Errors = Fails e.Errors;
+      };
 }
 
 $ENTRY r5fw-parser_FormatError {
@@ -1072,21 +1076,18 @@ ExtractCheckable-Sentences {
 }
 
 ExtractCheckable-Expr {
-  t.Term e.Expr =
-    <ExtractCheckable-Term t.Term> <ExtractCheckable-Expr e.Expr>;
-
-  /* пусто */ = /* пусто */;
+  e.Expr = <Map r5fw-parser_ExtractCheckable-Term e.Expr>;
 }
 
-ExtractCheckable-Term {
+$ENTRY r5fw-parser_ExtractCheckable-Term {
   (Variable t.SrcPos s.VarType e.Index) = (Variable t.SrcPos s.VarType e.Index);
 
   (Brackets e.Expr) = <ExtractCheckable-Expr e.Expr>;
 
-  (Call t.Pos (e.Name) e.Expr) =
-    (Call t.Pos e.Name) <ExtractCheckable-Expr e.Expr>;
+  (Call t.Pos (e.Name) e.Expr)
+    = (Call t.Pos e.Name) <ExtractCheckable-Expr e.Expr>;
 
-  t.OtherTerm = /* здесь нет переменных */;
+  t.OtherTerm = /* здесь нет переменных и имён */;
 }
 
 $ENTRY r5fw-parser_CheckSentence {
@@ -1097,16 +1098,17 @@ $ENTRY r5fw-parser_CheckSentence {
 }
 
 CheckSentence-Tail {
-  (e.FuncNames) (e.Variables) (Condition (e.ResultItems) (e.PatternItems)) e.Tail =
-    <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>
-    <CheckSentence-Tail (e.FuncNames) (e.Variables e.PatternItems) e.Tail>;
+  (e.FuncNames) (e.Variables)
+  (Condition (e.ResultItems) (e.PatternItems)) e.Tail
+    = <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>
+      <CheckSentence-Tail (e.FuncNames) (e.Variables e.PatternItems) e.Tail>;
 
-  (e.FuncNames) (e.Variables) RETURN (e.ResultItems) =
-    <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>;
+  (e.FuncNames) (e.Variables) RETURN (e.ResultItems)
+    = <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>;
 
-  (e.FuncNames) (e.Variables) CALL-BLOCK (e.ResultItems) e.Sentences =
-    <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>
-    <CheckSentences (e.FuncNames) (e.Variables) e.Sentences>;
+  (e.FuncNames) (e.Variables) CALL-BLOCK (e.ResultItems) e.Sentences
+    = <CheckResult (e.FuncNames) (e.Variables) e.ResultItems>
+      <CheckSentences (e.FuncNames) (e.Variables) e.Sentences>;
 }
 
 CheckResult {
