@@ -461,6 +461,9 @@ Unit {
   () (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
     = (Unit (SpecialComment t.Pos e.Text)) e.Tokens (e.Errors);
 
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <Unit (e.Scanned) e.Tokens (e.Errors)>;
+
   () (TkExtern t.Pos) e.Tokens (e.Errors)
     = <Unit (Extern) <NameList () e.Tokens (e.Errors)>>;
 
@@ -505,6 +508,9 @@ Unit {
   e.Names ::= (t.Pos e.Name)*
 */
 NameList {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <NameList (e.Scanned) e.Tokens (e.Errors)>;
+
   () (TkName t.Pos e.Name) e.Tokens (e.Errors)
     = <NameList ((NameList (t.Pos e.Name))) e.Tokens (e.Errors)>;
 
@@ -513,10 +519,13 @@ NameList {
     = t.Unexpected e.Tokens
       (e.Errors (Error t.Pos 'expected function name after $EXTERN keyword'));
 
-  ((NameList e.Names)) (TkComma t.1) (TkName t.Pos e.Name) e.Tokens (e.Errors)
+  ((NameList e.Names)) (TkComma t.Pos) e.Tokens (e.Errors)
+    = <NameList ((NameList e.Names) ',' t.Pos) e.Tokens (e.Errors)>;
+
+  ((NameList e.Names) ',' t.CommaPos) (TkName t.Pos e.Name) e.Tokens (e.Errors)
     = <NameList ((NameList e.Names (t.Pos e.Name))) e.Tokens (e.Errors)>;
 
-  ((NameList e.Names)) (TkComma t.Pos) e.Tokens (e.Errors)
+  ((NameList e.Names) ',' t.Pos) e.Tokens (e.Errors)
     = <NameList
         ((NameList e.Names)) e.Tokens
         (e.Errors (Error t.Pos 'expected name after comma'))
@@ -549,10 +558,16 @@ NameList {
     == t.Function? e.Tokens (e.Errors)
 */
 FunctionDef {
-  () (TkEntry t.EntryPos) (TkName t.NamePos e.Name) e.Tokens (e.Errors)
-    = <FunctionDef (t.EntryPos (e.Name) Entry) e.Tokens (e.Errors)>;
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <FunctionDef (e.Scanned) e.Tokens (e.Errors)>;
 
   () (TkEntry t.EntryPos) e.Tokens (e.Errors)
+    = <FunctionDef ((TkEntry t.EntryPos)) e.Tokens (e.Errors)>;
+
+  ((TkEntry t.EntryPos)) (TkName t.NamePos e.Name) e.Tokens (e.Errors)
+    = <FunctionDef (t.EntryPos (e.Name) Entry) e.Tokens (e.Errors)>;
+
+  ((TkEntry t.EntryPos)) e.Tokens (e.Errors)
     = e.Tokens
       (e.Errors (Error t.EntryPos '$ENTRY without function name, skipped'));
 
@@ -600,6 +615,9 @@ CheckBuiltinRedefine {
 */
 
 Block {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <Block (e.Scanned) e.Tokens (e.Errors)>;
+
   () (TkOpenBlock t.OpenPos) e.Tokens (e.Errors)
     = <Block ('{' t.OpenPos) <Sentences () e.Tokens (e.Errors)>>;
 
@@ -635,6 +653,9 @@ CheckEmptyBlock {
     == (Sentences e.Sentences) e.Tokens (e.Errors)
 */
 Sentences {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <Sentences (e.Scanned) e.Tokens (e.Errors)>;
+
   () t.Start e.Tokens (e.Errors)
     , t.Start : (s.Type t.Pos e.Value)
     , <FIRST_Sentence> : e.1 s.Type e.2
@@ -676,6 +697,9 @@ FIRST_Sentence {
     = (Sentence t.Sentence)? e.Tokens (e.Errors)
 */
 Sentence {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <Sentence (e.Scanned) e.Tokens (e.Errors)>;
+
   () (Pattern t.Pattern) e.Tokens (e.Errors)
     = <Sentence (t.Pattern) e.Tokens (e.Errors)>;
 
@@ -703,6 +727,9 @@ UnexpectedTokenInSentence {
     = (SentenceTail e.SentenceTail) e.Tokens (e.Errors)
 */
 SentenceTail {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens (e.Errors)
+    = <SentenceTail (e.Scanned) e.Tokens (e.Errors)>;
+
   () (TkAssign t.Pos) e.Tokens (e.Errors)
     = <SentenceTail ('=') <Result () e.Tokens (e.Errors)>>;
 
@@ -737,16 +764,14 @@ SentenceTail {
   (',') e.Tokens (e.Errors)
     = <SentenceTail (',') <Result () e.Tokens (e.Errors)>>;
 
-  (',' t.Result) (TkColon t.ColonPos) (TkOpenBlock t.BlockPos) e.Tokens
+  (',' t.Result) (TkColon t.ColonPos) e.Tokens (e.Errors)
+    = <SentenceTail (',' t.Result ':') e.Tokens (e.Errors)>;
+
+  (',' t.Result ':') (TkOpenBlock t.BlockPos) e.Tokens
   (e.Errors)
     = <SentenceTail
         (CALL-BLOCK t.Result ':{')
         <Block () (TkOpenBlock t.BlockPos) e.Tokens (e.Errors)>
-      >;
-
-  (',' t.Result) (TkColon t.Pos) e.Tokens (e.Errors)
-    = <SentenceTail
-        (',' t.Result ':') <Pattern () e.Tokens (e.Errors)>
       >;
 
   (',' t.Result) (TkOpenBlock t.Pos) e.Tokens (e.Errors)
@@ -785,6 +810,11 @@ SentenceTail {
         <SentenceTail () e.Tokens (e.Errors)>
       >;
 
+  (',' t.Result ':') e.Tokens (e.Errors)
+    = <SentenceTail
+        (',' t.Result ':') <Pattern () e.Tokens (e.Errors)>
+      >;
+
   (',' t.Result ':' t.Pattern) (SentenceTail e.SentenceTail) e.Tokens (e.Errors)
     = (SentenceTail (Condition t.Result t.Pattern) e.SentenceTail)
       e.Tokens (e.Errors);
@@ -821,6 +851,9 @@ Result {
   s.Kind ::= Pattern | Result
 */
 DirtyExpression {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens s.Kind (e.Errors)
+    = <DirtyExpression (e.Scanned) e.Tokens s.Kind (e.Errors)>;
+
   () (Expression e.Expression) e.Tokens s.Kind (e.Errors)
     = <DirtyExpression
         ((e.Expression)) <Unbalanced () e.Tokens s.Kind (e.Errors)>
@@ -840,6 +873,9 @@ DirtyExpression {
     == (Expression e.Expression) e.Tokens s.Kind (e.Errors)
 */
 Expression {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens s.Kind (e.Errors)
+    = <Expression (e.Scanned) e.Tokens s.Kind (e.Errors)>;
+
   (e.Scanned) t.TermStart e.Tokens s.Kind (e.Errors)
     , t.TermStart : (s.Type t.Pos e.Value)
     , <FIRST_Term> : e.1 s.Type e.2
@@ -870,6 +906,9 @@ FIRST_Term {
     == (Term t.Term) e.Tokens s.Kind (e.Errors)
 */
 Term {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens s.Kind (e.Errors)
+    = <Term (e.Scanned) e.Tokens s.Kind (e.Errors)>;
+
   () (s.Literal t.Pos e.Value) e.Tokens s.Kind (e.Errors)
     , (TkName Word) (TkCompound Word) (TkMacroDigit Number) (TkChar Char)
     : e.1 (s.Literal s.SymbolType) e.2
@@ -936,6 +975,9 @@ CallBracketInPattern {
     == (Unbalanced e.Expression) e.Tokens s.Kind (e.Errors)
 */
 Unbalanced {
+  (e.Scanned) (TkSpecComment t.Pos e.Text) e.Tokens s.Kind (e.Errors)
+    = <Unbalanced (e.Scanned) e.Tokens s.Kind (e.Errors)>;
+
   () (s.Type t.Pos) e.Tokens s.Kind (e.Errors)
     , TkCloseBracket TkCloseCall : e.1 s.Type e.2
     = <Unbalanced
