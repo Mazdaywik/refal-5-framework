@@ -495,6 +495,15 @@ Unit {
     = <Unit () <FunctionDef () (s.Type t.Pos e.Value) e.Tokens (e.Errors)>>;
 
   () (TkSemicolon t.Pos) e.Tokens (e.Errors) = e.Tokens (e.Errors);
+
+  () t.Unexpected e.Tokens (e.Errors)
+    = t.Unexpected e.Tokens
+      (
+        e.Errors
+        <UnexpectedToken
+          t.Unexpected '$EXTERN, $ENTRY, function name or special comment'
+        >
+      );
 }
 
 *$ENUM Error
@@ -790,7 +799,7 @@ SentenceTail {
   (',' t.Result) (s.Type t.Pos) e.Tokens (e.Errors)
     , TkComma TkAssign : e.1 s.Type e.2
     = <SentenceTail
-        (',' t.Result)
+        (',' t.Result ':')
         <Pattern
           () (s.Type t.Pos) e.Tokens
           (e.Errors (Error t.Pos 'Missed \':\''))
@@ -928,7 +937,7 @@ Term {
     = (Term (Brackets e.Nested)) e.Tokens s.Kind (e.Errors);
 
   ('(' t.OpenPos (e.Nested)) (s.Type t.Pos e.Value) e.Tokens s.Kind (e.Errors)
-    = (Term (Brackets e.Nested)) e.Tokens s.Kind
+    = (Term (Brackets e.Nested)) (s.Type t.Pos e.Value) e.Tokens s.Kind
       (
         e.Errors
         (Error t.OpenPos 'unbalanced \'(\'')
