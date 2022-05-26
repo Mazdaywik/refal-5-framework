@@ -1,5 +1,5 @@
 *$FROM LibraryEx
-$EXTERN LoadFile, Inc, OneOf, Map;
+$EXTERN LoadFile, Inc, Map;
 *$EXTERN Success, Fails
 
 *$FROM Library
@@ -653,7 +653,7 @@ Sentences {
 }
 
 FIRST_Sentence {
-  = <FIRST_Expr> TkAssign TkComma
+  = <FIRST_Term> TkAssign TkComma
 }
 
 /*
@@ -779,27 +779,72 @@ SentenceTail {
 
 
 /*
-  Pattern = Expression.
+  Pattern = DirtyExpression.
 
   <Pattern () e.Tokens (e.Errors)> == (Pattern t.Pattern)? e.Tokens (e.Errors)
 */
 Pattern {
-  () e.Tokens (e.Errors) = <Expression () e.Tokens Pattern (e.Errors)>;
+  () e.Tokens (e.Errors) = <DirtyExpression () e.Tokens Pattern (e.Errors)>;
 }
 
 
 /*
-  Result = Expression.
+  Result = DirtyExpression.
 
   <Result () e.Tokens (e.Errors)> == (Result t.Result)? e.Tokens (e.Errors)
 */
 Result {
-  () e.Tokens (e.Errors) = <Expression () e.Tokens Result (e.Errors)>;
+  () e.Tokens (e.Errors) = <DirtyExpression () e.Tokens Result (e.Errors)>;
 }
 
 
 /*
-  Expression = (
+  DirtyExpression = Expression Unbalanced.
+
+  <DirtyExpression (e.Scanned) e.Tokens s.Kind (e.Errors)>
+    == (s.Kind e.Expression) e.Tokens (e.Errors)
+
+
+  s.Kind ::= Pattern | Result
+*/
+DirtyExpression {
+  () (Expression e.Expression) e.Tokens s.Kind (e.Errors)
+    = <DirtyExpression
+        ((e.Expression)) <Unbalanced () e.Tokens s.Kind (e.Errors)>
+      >;
+
+  () e.Tokens s.Kind (e.Errors)
+    = <DirtyExpression () <Expression () e.Tokens s.Kind (e.Errors)>>;
+
+  ((e.Expression)) (Unbalanced e.Unbalanced) e.Tokens s.Kind (e.Errors)
+    = (s.Kind (e.Expression e.Unbalanced)) e.Tokens (e.Errors);
+}
+
+/*
+  Expression = ε | Term Expression.
+
+  <Expression (e.Scanned) e.Tokens s.Kind (e.Errors)>
+    == (Expression e.Expression) e.Tokens s.Kind (e.Errors)
+*/
+Expression {
+  (e.Scanned) t.TermStart e.Tokens s.Kind (e.Errors)
+    , t.TermStart : (s.Type t.Pos e.Value)
+    , <FIRST_Term> : e.1 s.Type e.2
+    = <Expression (e.Scanned) <Term () t.TermStart e.Tokens s.Kind (e.Errors)>>;
+
+  (e.Scanned) (Term t.Term) e.Tokens s.Kind (e.Errors)
+    = <Expression (e.Scanned t.Term) e.Tokens s.Kind (e.Errors)>;
+
+  (e.Scanned) e.Tokens s.Kind (e.Errors)
+    = (Expression e.Scanned) e.Tokens s.Kind (e.Errors);
+}
+
+FIRST_Term {
+  = TkName TkCompound TkMacroDigit TkChar TkVariable TkOpenBracket TkOpenCall
+}
+
+/*
+  Term =
       NAME
     | COMPOUND
     | NUMBER
@@ -807,162 +852,99 @@ Result {
     | VARIABLE
     | "(" Expression ")"
     | "<Func" Expression ">" -- допустимо только в результатных выражениях
-  )* !((")" | ">") Expression)*
 
-  <Expression s.Kind e.Tokens> == (e.Errors) t.Expression e.Tokens
-
-  s.Kind ::= Pattern | Result
+  <Term (e.Scanned) e.Tokens s.Kind (e.Errors)>
+    == (Term t.Term) e.Tokens s.Kind (e.Errors)
 */
-Expression {
-  () e.Tokens s.Kind (e.Errors)
-    , <Expression-Old s.Kind e.Tokens>
-    : (e.ExprErrors) t.Expression e.TokensTail
-    = (s.Kind t.Expression) e.TokensTail (e.ExprErrors e.Errors)
-}
+Term {
+  () (s.Literal t.Pos e.Value) e.Tokens s.Kind (e.Errors)
+    , (TkName Word) (TkCompound Word) (TkMacroDigit Number) (TkChar Char)
+    : e.1 (s.Literal s.SymbolType) e.2
+    = (Term (Symbol s.SymbolType e.Value)) e.Tokens s.Kind (e.Errors);
 
-Expression-Old {
-  s.Kind e.Tokens =
-    <Expression-CheckBrackets
-      s.Kind <Expression-Aux s.Kind e.Tokens>
-    >;
-}
+  () (TkVariable t.Pso s.VarType e.Index) e.Tokens s.Kind (e.Errors)
+    = (Term (Variable t.Pso s.VarType e.Index)) e.Tokens s.Kind (e.Errors);
 
-FIRST_Expr {
-  = TkName TkCompound TkMacroDigit TkChar TkVariable TkOpenBracket TkOpenCall
-}
+  () (TkOpenBracket t.Pos) e.Tokens s.Kind (e.Errors)
+    = <Term ('(' t.Pos) <Expression () e.Tokens s.Kind (e.Errors)>>;
 
-Expression-Aux {
-  s.Kind e.Tokens =
-    <DoExpression s.Kind (/* errors */) (/* collected */) e.Tokens>
-}
+  ('(' t.OpenPos) (Expression e.Nested) e.Tokens s.Kind (e.Errors)
+    = <Term ('(' t.OpenPos (e.Nested)) e.Tokens s.Kind (e.Errors)>;
 
-DoExpression {
-  s.Kind (e.Errors) (e.Collected) t.NextToken e.Tokens,
-      t.NextToken:
-    {
-      (TkName t.Pos e.Name) =
-        <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Word e.Name)) e.Tokens
-        >;
+  ('(' t.OpenPos (e.Nested)) (TkCloseBracket t.ClosePos) e.Tokens
+  s.Kind (e.Errors)
+    = (Term (Brackets e.Nested)) e.Tokens s.Kind (e.Errors);
 
-      (TkCompound t.Pos e.Symbols) =
-        <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Word e.Symbols)) e.Tokens
-        >;
-
-      (TkMacroDigit t.Pos s.Number) =
-        <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Number s.Number)) e.Tokens
-        >;
-
-      (TkChar t.Pos s.Char) =
-        <DoExpression
-          s.Kind (e.Errors) (e.Collected (Symbol Char s.Char)) e.Tokens
-        >;
-
-      (TkVariable t.Pos s.VarType e.Index) =
-        <DoExpression
-          s.Kind (e.Errors)
-          (e.Collected (Variable t.Pos s.VarType e.Index)) e.Tokens
-        >;
-
-      (TkOpenBracket t.Pos) =
-        <DoExpression-AfterBracket
-          s.Kind (e.Errors) (e.Collected) <Expression-Aux s.Kind e.Tokens>
-        >;
-
-      (TkOpenCall t.Pos e.FuncName) =
-        <DoExpression-AfterCall
-          s.Kind (e.Errors) (e.Collected) t.Pos (e.FuncName)
-          <Expression-Aux s.Kind e.Tokens>
-        >;
-
-      t.OtherToken =
-        (e.Errors) (e.Collected) t.OtherToken e.Tokens;
-    }
-}
-
-DoExpression-AfterBracket {
-  s.Kind (e.Errors) (e.Collected)
-  (e.SubexprErrors) (e.BracketTerms) (TkCloseBracket t.Pos) e.Tokens =
-    <DoExpression
-      s.Kind (e.Errors e.SubexprErrors)
-      (e.Collected (Brackets e.BracketTerms)) e.Tokens
-    >;
-
-  s.Kind (e.Errors) (e.Collected)
-  (e.SubexprErrors) (e.BracketTerms) (s.Type t.Pos e.Value) e.Tokens =
-    <DoExpression
-      s.Kind (e.Errors e.SubexprErrors (Error t.Pos 'Missed \')\''))
-      (e.Collected (Brackets e.BracketTerms)) (s.Type t.Pos e.Value) e.Tokens
-    >;
-}
-
-DoExpression-AfterCall {
-  Result (e.Errors) (e.Collected) t.CallPos (e.FuncName)
-  (e.SubexprErrors) (e.BracketTerms) (TkCloseCall t.Pos) e.Tokens =
-    <DoExpression
-      Result (e.Errors e.SubexprErrors)
-      (e.Collected (Call t.CallPos (e.FuncName) e.BracketTerms)) e.Tokens
-    >;
-
-  Pattern (e.Errors) (e.Collected) t.CallPos (e.FuncName)
-  (e.SubexprErrors) (e.BracketTerms) (TkCloseCall t.Pos) e.Tokens =
-    <DoExpression
-      Pattern
+  ('(' t.OpenPos (e.Nested)) (s.Type t.Pos e.Value) e.Tokens s.Kind (e.Errors)
+    = (Term (Brackets e.Nested)) e.Tokens s.Kind
       (
-        e.Errors e.SubexprErrors
-        (Error
-          t.CallPos
-          'unexpected \'>\' in pattern expression, maybe missed \'=\''
-        )
-      )
-      (e.Collected (Brackets e.BracketTerms)) e.Tokens
-    >;
-
-  Result (e.Errors) (e.Collected) t.CallPos (e.FuncName)
-  (e.SubexprErrors) (e.BracketTerms) (s.Type t.Pos e.Value) e.Tokens =
-    <DoExpression
-      Result (e.Errors e.SubexprErrors (Error t.Pos 'Missed \'>\''))
-      (e.Collected (Call t.CallPos (e.FuncName) e.BracketTerms))
-      (s.Type t.Pos e.Value) e.Tokens
-    >;
-
-  Pattern (e.Errors) (e.Collected) t.CallPos (e.FuncName)
-  (e.SubexprErrors) (e.BracketTerms) (s.Type t.Pos e.Value) e.Tokens =
-    <DoExpression
-      Pattern
-      (
-        e.Errors e.SubexprErrors
-        (Error
-          t.CallPos
-          'unexpected \'>\' in pattern expression, maybe missed \'=\''
-        )
+        e.Errors
+        (Error t.OpenPos 'unbalanced \'(\'')
         (Error t.Pos 'Missed \')\'')
-      )
-      (e.Collected (Brackets e.BracketTerms)) (s.Type t.Pos e.Value) e.Tokens
-    >;
+      );
+
+  () (TkOpenCall t.Pos e.FuncName) e.Tokens s.Kind (e.Errors)
+    = <Term
+        ('<' t.Pos (e.FuncName)) <Expression () e.Tokens s.Kind (e.Errors)>
+      >;
+
+  ('<' t.OpenPos (e.FuncName)) (Expression e.Nested) e.Tokens s.Kind (e.Errors)
+    = <Term ('<' t.OpenPos (e.FuncName) (e.Nested)) e.Tokens s.Kind (e.Errors)>;
+
+  ('<' t.OpenPos (e.FuncName) (e.Nested)) (TkCloseCall t.ClosePos) e.Tokens
+  s.Kind (e.Errors)
+    = (Term (Call t.OpenPos (e.FuncName) e.Nested)) e.Tokens s.Kind
+      (e.Errors <CallBracketInPattern t.OpenPos s.Kind '<'>);
+
+  ('<' t.OpenPos (e.FuncName) (e.Nested)) (s.Type t.Pos e.Value) e.Tokens
+  s.Kind (e.Errors)
+    = (Term (Call t.OpenPos (e.FuncName) e.Nested)) e.Tokens s.Kind
+      (
+        (Error t.OpenPos 'unbalanced \'<\'')
+        (Error t.Pos 'Missed \'>\'')
+        <CallBracketInPattern t.OpenPos s.Kind '>'>
+      );
 }
 
-Expression-CheckBrackets {
-  s.Kind (e.Errors) (e.Expression) (s.Type t.Pos) e.Tokens,
-      <OneOf s.Type TkCloseBracket TkCloseCall>: True =
-    <Expression-CheckBrackets-AfterSubexpr
-      s.Kind
-      (e.Errors (Error t.Pos 'unbalanced ' <TokName s.Type>))
-      (e.Expression)
-      <Expression-Aux s.Kind e.Tokens>
-    >;
+CallBracketInPattern {
+  t.CallPos Result s.Bracket = /* нет ошибки */;
 
-  s.Kind (e.Errors) t.Expression e.Tokens = (e.Errors) t.Expression e.Tokens;
+  t.CallPos Pattern s.Bracket
+    = (Error
+        t.CallPos
+        'unexpected \'' s.Bracket '\' in pattern expression, maybe missed \'=\''
+      );
 }
 
-Expression-CheckBrackets-AfterSubexpr {
-  s.Kind (e.Errors) (e.Expression)
-  (e.SubexprErrors) (e.Subexpression) e.Tokens =
-    <Expression-CheckBrackets
-      s.Kind (e.Errors e.SubexprErrors) (e.Expression e.Subexpression) e.Tokens
-    >;
+/*
+  Unbalanced = ε | (")" | ">") Expression Unbalanced.
+
+  <Unbalanced (e.Scanned) e.Tokens s.Kind (e.Errors)>
+    == (Unbalanced e.Expression) e.Tokens s.Kind (e.Errors)
+*/
+Unbalanced {
+  () (s.Type t.Pos) e.Tokens s.Kind (e.Errors)
+    , TkCloseBracket TkCloseCall : e.1 s.Type e.2
+    = <Unbalanced
+        (TkCloseBracket)
+        <Expression
+          () e.Tokens s.Kind
+          (e.Errors (Error t.Pos 'unbalanced ' <TokName s.Type>))
+        >
+      >;
+
+  () e.Tokens s.Kind (e.Errors)
+    = (Unbalanced /* всё сбалансировано */) e.Tokens s.Kind (e.Errors);
+
+  (s.Type) (Expression e.Expression) e.Tokens s.Kind (e.Errors)
+    = <Unbalanced
+        (s.Type (e.Expression))
+        <Unbalanced () e.Tokens s.Kind (e.Errors)>
+      >;
+
+  (s.Type (e.Expression)) (Unbalanced e.Unbalanced) e.Tokens
+  s.Kind (e.Errors)
+    = (Unbalanced e.Expression e.Unbalanced) e.Tokens s.Kind (e.Errors);
 }
 
 
