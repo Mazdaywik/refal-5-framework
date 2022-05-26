@@ -401,7 +401,7 @@ $ENTRY Parse {
 }
 
 /*
-  Program = empty | Program Unit.
+  Program = ε | Unit Program | ";" Program.
 
   <Program (e.Tree) e.Tokens (e.Errors)>
     == (Program t.Unit*) e.Tokens (e.Errors)
@@ -409,28 +409,26 @@ $ENTRY Parse {
   e.Errors ::= (Error t.Pos e.Message)*
 */
 Program {
-  () e.Tokens (e.Errors)
-    = <Program ((Program /* пусто */)) e.Tokens (e.Errors)>;
+  () t.First e.Tokens (e.Errors)
+    , t.First : (s.Type t.Pos e.Value)
+    , <FIRST_Unit> : e.1 s.Type e.2
+    = <Program () <Unit () t.First e.Tokens (e.Errors)>>;
 
-  ((Program e.Units)) (Unit t.Unit) e.Tokens (e.Errors)
-    = <Program ((Program e.Units t.Unit)) e.Tokens (e.Errors)>;
+  () (Unit t.Unit) e.Tokens (e.Errors)
+    = <Program ((Unit t.Unit)) <Program () e.Tokens (e.Errors)>>;
 
-  ((Program e.Units)) (s.Type t.Pos e.Value) e.Tokens (e.Errors)
-    , <StartOfUnit> : e.1 s.Type e.2
+  ((Unit t.Unit)) (Program e.Program) e.Tokens (e.Errors)
+    = (Program t.Unit e.Program) e.Tokens (e.Errors);
+
+  () (TkSemicolon t.Pos) e.Tokens (e.Errors)
+    = <Program () e.Tokens (e.Errors)>;
+
+  () (TkEOF t.Pos) (e.Errors)
+    = (Program /* пусто */) (TkEOF t.Pos) (e.Errors);
+
+  () t.Unexpected e.Tokens (e.Errors)
     = <Program
-        ((Program e.Units))
-        <Unit () (s.Type t.Pos e.Value) e.Tokens (e.Errors)>
-      >;
-
-  ((Program e.Units)) (TkSemicolon t.Pos) e.Tokens (e.Errors)
-    = <Program ((Program e.Units)) e.Tokens (e.Errors)>;
-
-  ((Program e.Units)) (TkEOF t.Pos) (e.Errors)
-    = (Program e.Units) (TkEOF t.Pos) (e.Errors);
-
-  ((Program e.Units)) t.Unexpected e.Tokens (e.Errors)
-    = <Program
-        ((Program e.Units)) e.Tokens
+        () e.Tokens
         (
           e.Errors
           <UnexpectedToken
@@ -440,8 +438,8 @@ Program {
       >
 }
 
-StartOfUnit {
-  = TkSpecComment TkExtern TkEntry TkName TkSemicolon
+FIRST_Unit {
+  = TkSpecComment TkExtern TkEntry TkName
 }
 
 /*
