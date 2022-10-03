@@ -1,6 +1,5 @@
 *$FROM LibraryEx
 $EXTERN ArgList, SaveFile;
-*$EXTERN Success, Fails
 
 *$FROM R5FW-Parser
 $EXTERN Scan, Parse;

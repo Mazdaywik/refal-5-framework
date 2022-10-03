@@ -1,11 +1,3 @@
-*$FROM R5FW-Parser-Defs
-*$EXTERN Extern, Function, SpecialComment, Entry, Local, RETURN, Condition
-*$EXTERN CALL-BLOCK, Brackets, Call, Symbol, Word, Number, Char, Variable
-
-*$FROM Library
-*$EXTERN False, True
-
-
 /**
   <Plain e.Refal5-AST> == (e.TextLine)*
 */
@@ -114,8 +106,6 @@ Sentences {
   (e.Indent) /* пусто */ = /* пусто */;
 }
 
-*$ENUM Comment
-
 Sentence {
   (s.Space e.Indent) Comment e.Text
     = <PutComment (e.Indent) e.Text>;
@@ -163,8 +153,6 @@ Tail {
       <Sentences (e.Indent '    ') e.Sentences>
       (e.Indent '  };')
 }
-
-*$ENUM FIRST, NEXT
 
 Expression {
   (e.Prefix) (e.Indent) /* пусто */, <Trim-R e.Prefix>: /* пусто */

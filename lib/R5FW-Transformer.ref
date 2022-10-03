@@ -1,14 +1,8 @@
 *$FROM LibraryEx
 $EXTERN Map, Unique;
-*$EXTERN Success, Fails
 
 *$FROM R5FW-Parser-Defs
 $EXTERN Builtins;
-*$EXTERN Function, Extern, SpecialComment, CALL-BLOCK, RETURN, Call, Local
-*$EXTERN Condition, Brackets, Variable, Symbol
-
-*$FROM Library
-*$EXTERN True, False
 
 
 /**
@@ -165,8 +159,6 @@ BlockScopeVars {
       >;
 }
 
-*$EENUM NO-POS
-
 $ENTRY transformer_MakeVariables {
   ('e' e.Index) = (Brackets (Variable NO-POS 'e' e.Index));
   (s.VarType e.Index) = (Variable NO-POS s.VarType e.Index);
@@ -278,8 +270,6 @@ UnConditionSentence-Aux {
       e.ContFunction;
 }
 
-*$ENUM NoContinuation
-
 AnalyzeContinuation {
   (e.Names) (e.Prefix) /* пусто */ = (e.Names) NoContinuation /* пусто */;
 
@@ -297,16 +287,12 @@ MakeContinuationSentence {
     = ((e.Pattern) RETURN ((Call NO-POS (e.ContName) e.ContArg)));
 }
 
-*$ENUM HOLE
-
 PatternSteps {
   (e.UsedVariables) e.Pattern
     = <DoPatternSteps
         (e.UsedVariables) (/* bound variables */) (HOLE e.Pattern)
       >;
 }
-
-*$ENUM LeftBracket, RightBracket, OpenE
 
 DoPatternSteps {
   t.UsedVariables (e.BoundEVariables) e.HolesAndItems

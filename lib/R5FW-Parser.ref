@@ -1,19 +1,9 @@
 *$FROM LibraryEx
 $EXTERN LoadFile, Inc, Map, MapAccum;
-*$EXTERN Success, Fails
 
-*$FROM Library
-*$EXTERN True, False
 
 *$FROM R5FW-Parser-Defs
 $EXTERN Builtins, TokName;
-*$EXTERN TkEOF, TkSpecComment, TkOpenCall, TkError
-*$EXTERN TkOpenBracket, TkCloseBracket, TkOpenBlock, TkCloseBlock, TkCloseCall
-*$EXTERN TkComma, TkColon, TkAssign, TkSemicolon, TkExtern, TkEntry
-*$EXTERN TkMacroDigit, TkVariable, TkName, TkChar, TkCompound
-*$EXTERN SpecialComment, Extern, Function, Entry, Local
-*$EXTERN RETURN, CALL-BLOCK, Condition
-*$EXTERN Symbol, Word, Number, Char, Variable, Brackets, Call
 
 
 /**
@@ -41,8 +31,6 @@ SkipBOM {
 IncLine {
   (s.Line s.Col e.FileName) = (<Inc s.Line> 1 e.FileName);
 }
-
-*$ENUM Len
 
 IncCol {
   (s.Line s.Col e.FileName) = (s.Line <Inc s.Col> e.FileName);
@@ -505,8 +493,6 @@ Unit {
         >
       );
 }
-
-*$ENUM Error
 
 /*
   NameList = NAME | NameList "," NAME.
@@ -1039,8 +1025,6 @@ SemanticCheck {
 $ENTRY r5fw-parser_FormatError {
   (Error t.Pos e.Message) = (t.Pos e.Message);
 }
-
-*$ENUM NoEntry, HasEntry
 
 NoEntryError {
   t.Pos NoEntry = (t.Pos 'No $ENTRY functions in a file');

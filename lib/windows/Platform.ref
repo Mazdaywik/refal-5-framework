@@ -1,10 +1,4 @@
-*$FROM Library
-*$EXTERN True, False
-
-
 $ENTRY Platform { = Windows; }
-
-*$EENUM Windows, POSIX
 
 $ENTRY DirectorySeparator { = '\\'; }
 
