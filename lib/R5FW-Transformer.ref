@@ -1,5 +1,5 @@
 *$FROM LibraryEx
-$EXTERN Map, Unique;
+$EXTERN MapAccum, DelAccumulator, Map, Unique;
 
 *$FROM R5FW-Parser-Defs
 $EXTERN Builtins;
@@ -17,7 +17,12 @@ $ENTRY Transform {
 
 Transform-Step {
   s.FnMode e.Units
-    = <DoTransform s.FnMode <GetFunctionNames (<Builtins>) e.Units>>;
+    = <DelAccumulator
+        <MapAccum
+          (r5fw-transformer_TransformUnit s.FnMode)
+          <GetFunctionNames (<Builtins>) e.Units>
+        >
+      >;
 }
 
 GetFunctionNames {
@@ -38,22 +43,14 @@ GetFunctionNames {
 
 $ENTRY refal5-transformer_RemovePos { (t.Pos e.Name) = (e.Name) }
 
-DoTransform {
-  s.FnMode (e.Names) (Function t.SrcPos (e.Name) s.Scope e.Sentences) e.Units
-    , <Mu s.FnMode (e.Names) t.SrcPos (e.Name) s.Scope e.Sentences>
-    : (e.NewNames) e.NewFunctions
-    = e.NewFunctions
-      <DoTransform s.FnMode (e.NewNames) e.Units>;
+$ENTRY r5fw-transformer_TransformUnit {
+  s.FnMode (e.Names) (Function t.SrcPos (e.Name) s.Scope e.Sentences)
+    = <Mu s.FnMode (e.Names) t.SrcPos (e.Name) s.Scope e.Sentences>;
 
-  s.FnMode (e.Names) (Extern e.ExternNames) e.Units
-    = (Extern e.ExternNames)
-      <DoTransform s.FnMode (e.Names) e.Units>;
+  s.FnMode (e.Names) (Extern e.ExternNames) = (e.Names) (Extern e.ExternNames);
 
-  s.FnMode (e.Names) (SpecialComment t.SrcPos e.Text) e.Units
-    = (SpecialComment t.SrcPos e.Text)
-      <DoTransform s.FnMode (e.Names) e.Units>;
-
-  s.FnMode (e.Names) /* пусто */ = /* пусто */;
+  s.FnMode (e.Names) (SpecialComment t.SrcPos e.Text)
+    = (e.Names) (SpecialComment t.SrcPos e.Text);
 }
 
 ** НАМЕРЕННО ОТКАЗЫВАЕМСЯ ОТ ОТСЛЕЖИВАНИЯ КОПИРОВАНИЯ ПОВТОРНЫХ ПЕРЕМЕННЫХ
@@ -187,23 +184,17 @@ UnCondition {
 DoUnCondition {
   (e.Names) t.SrcPos (e.Name) s.Scope (e.Prefix)
   (e.ScannedFunctions)
-  e.Sentences-B (e.ConditionalSentence) e.Sentences-E
+  e.Sentences-B ((e.Pattern) (Condition e.Condition) e.Tail) e.Sentences-E
   (e.UnscannedFunctions)
-    , <UnConditionSentence
-        (e.Names) (e.Prefix) (e.ConditionalSentence) e.Sentences-E
-      >
-    : Success (e.RefilledNames) (e.TransformedSentences) e.NewFunctions
-    = <DoUnCondition-NextFunction
-        (e.RefilledNames) t.SrcPos (e.Prefix)
-        (
-          e.ScannedFunctions
-          (Function
-            t.SrcPos (e.Name) s.Scope
-            e.Sentences-B
-            e.TransformedSentences
-          )
-        )
-        (e.UnscannedFunctions e.NewFunctions)
+    = <DoUnCondition-ConditionSentence
+        t.SrcPos (e.Name) s.Scope (e.Prefix)
+        (e.ScannedFunctions) (e.Sentences-B)
+        (e.UnscannedFunctions)
+        <UnConditionSentence
+          (e.Names) (e.Prefix)
+          ((e.Pattern) (Condition e.Condition) e.Tail)
+          e.Sentences-E
+        >
       >;
 
   (e.Names) t.SrcPos (e.Name) s.Scope (e.Prefix)
@@ -215,6 +206,25 @@ DoUnCondition {
           (Function t.SrcPos (e.Name) s.Scope e.Sentences)
         )
         (e.UnscannedFunctions)
+      >;
+}
+
+DoUnCondition-ConditionSentence {
+  t.SrcPos (e.Name) s.Scope (e.Prefix)
+  (e.ScannedFunctions) (e.Sentences-B)
+  (e.UnscannedFunctions)
+  (e.Names) (e.TransformedSentences) e.NewFunctions
+    = <DoUnCondition-NextFunction
+        (e.Names) t.SrcPos (e.Prefix)
+        (
+          e.ScannedFunctions
+          (Function
+            t.SrcPos (e.Name) s.Scope
+            e.Sentences-B
+            e.TransformedSentences
+          )
+        )
+        (e.UnscannedFunctions e.NewFunctions)
       >;
 }
 
@@ -232,34 +242,27 @@ DoUnCondition-NextFunction {
     = (e.Names) e.ScannedFunctions
 }
 
-/**
-  <UnConditionSentence
-    (e.Names) (e.Prefix) (e.ConditionalSentence) e.ContinuationSentences
-  >
-    == Success (e.RefilledNames) (e.TransformedSentences) e.NewFunctions
-    == Fails
-*/
 UnConditionSentence {
   (e.Names) (e.Prefix) (e.Sentence) e.ContinuationSentences
-    , e.Sentence
-    : {
-        (e.Pattern) (Condition (e.CondResult) t.CondPattern) e.Tail
-          = Success
-            <UnConditionSentence-Aux
-              (e.Names) (e.Prefix) (e.Sentence) e.ContinuationSentences
-            >;
-
-        (e.Pattern) RETURN (e.Result) = Fails;
-      };
+    = <UnConditionSentence-AnalyzeContinuation
+        (e.Prefix) (e.Sentence)
+        <AnalyzeContinuation (e.Names) (e.Prefix) e.ContinuationSentences>
+      >;
 }
 
-UnConditionSentence-Aux {
-  (e.Names) (e.Prefix) (e.Sentence) e.ContinuationSentences
-    , <AnalyzeContinuation (e.Names) (e.Prefix) e.ContinuationSentences>
-    : (e.Names1) t.ContName e.ContFunction
-    , <ConditionSubFunctions (e.Names1) (e.Prefix) t.ContName e.Sentence>
-    : (e.Names2) (e.CallCheckSentence) e.SubFunctions
-    = (e.Names2)
+UnConditionSentence-AnalyzeContinuation {
+  (e.Prefix) (e.Sentence)
+  (e.Names) t.ContName e.ContFunction
+    = <UnConditionSentence-ConditionSubFunctions
+        t.ContName (e.ContFunction)
+        <ConditionSubFunctions (e.Names) (e.Prefix) t.ContName e.Sentence>
+      >;
+}
+
+UnConditionSentence-ConditionSubFunctions {
+  t.ContName (e.ContFunction)
+  (e.Names) (e.CallCheckSentence) e.SubFunctions
+    = (e.Names)
       (
         (e.CallCheckSentence)
         <MakeContinuationSentence
@@ -605,42 +608,50 @@ DoT0 {
 ConditionSubFunctions {
   (e.Names) (e.Prefix) t.ContName
   e.Sentence
-    , e.Sentence
-    : (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) e.SentenceTail
-    , <NewName (e.Names) e.Prefix '_check'> : (e.RefilledNames1) e.CheckFunction
+    = <ConditionSubFunctions-SplitSentence
+        (e.Names) (e.Prefix) t.ContName (e.Sentence) e.Sentence
+      >;
+}
+
+ConditionSubFunctions-SplitSentence {
+  (e.Names) (e.Prefix) t.ContName (e.Sentence)
+  (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) e.SentenceTail
+    = <ConditionSubFunctions-CheckFunction
+        (<NewName (e.Names) e.Prefix '_check'>)
+        (e.Prefix) t.ContName (e.Sentence)
+        (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) e.SentenceTail
+      >;
+}
+
+ConditionSubFunctions-CheckFunction {
+  ((e.Names) e.CheckFunction) (e.Prefix) t.ContName (e.Sentence)
+  (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) e.SentenceTail
     , <ExtractVariables (e.Sentence)> : e.SentenceVariables
     , <BlockScopeVars (e.Pattern)> : e.PatternVarsAsExpr
-    , <ConditionSubFunctions-Aux
-        (e.RefilledNames1) (e.SentenceVariables) (e.Prefix) t.ContName
+    = <ConditionSubFunctions-OpenEChain
         (e.CheckFunction) (e.PatternVarsAsExpr)
-        (e.CondResult) (e.CondPattern) (e.SentenceTail)
-        <PatternSteps (e.SentenceVariables) e.Pattern>
-      >
-    : (e.RefilledNames2) e.SubFunctions
-    = (e.RefilledNames2)
+        (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) (e.SentenceTail)
+        <OpenEChain
+          (e.Names) (e.SentenceVariables) (e.Prefix) t.ContName (e.CheckFunction)
+          (e.PatternVarsAsExpr) (e.CondResult)
+          <PatternSteps (e.SentenceVariables) e.Pattern>
+        >
+      >;
+}
+
+ConditionSubFunctions-OpenEChain {
+  (e.CheckFunction) (e.PatternVarsAsExpr)
+  (e.Pattern) (Condition (e.CondResult) (e.CondPattern)) (e.SentenceTail)
+  (e.Names) (e.ContSentence) e.OpenEFunctions
+    = (e.Names)
       (
         (e.Pattern)
         RETURN
         ((Call NO-POS (e.CheckFunction) e.PatternVarsAsExpr e.CondResult))
       )
-      e.SubFunctions;
-}
-
-ConditionSubFunctions-Aux {
-  (e.Names) (e.VarNames) (e.Prefix) t.ContName
-  (e.CheckFunction) (e.PatternVarsAsExpr)
-  (e.CondResult) (e.CondPattern) (e.CheckSentenceTail)
-  e.PatternSteps
-    , <OpenEChain
-        (e.Names) (e.VarNames) (e.Prefix) t.ContName (e.CheckFunction)
-        (e.PatternVarsAsExpr) (e.CondResult)
-        e.PatternSteps
-      >
-    : (e.RefilledNames) (e.ContSentence) e.OpenEFunctions
-    = (e.RefilledNames)
       (
         (e.CheckFunction)
-        ((e.PatternVarsAsExpr e.CondPattern) e.CheckSentenceTail)
+        ((e.PatternVarsAsExpr e.CondPattern) e.SentenceTail)
         e.ContSentence
       )
       e.OpenEFunctions;
@@ -801,6 +812,6 @@ DoNewName {
               ((e.NewName) e.Names-B e.Names-E) e.Prefix <+ s.SufNo 1>
             >;
 
-        e.Names = ((e.NewName) e.Names) e.NewName;
+        e.Names2 = ((e.NewName) e.Names2) e.NewName;
       };
 }

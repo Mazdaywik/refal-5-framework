@@ -383,9 +383,14 @@ DoScan-Compound-HandleEscape {
 $ENTRY Parse {
   t.First e.Tokens
     , t.First : (s.Type t.Pos e.Value)
-    , <Program () <SeparateLexerErrors t.First e.Tokens ()>>
-    : (Program e.Units) (TkEOF t.EOFPos) (e.Errors)
-    = <SemanticCheck t.Pos e.Units (e.Errors)>;
+    = <Parse-Aux
+        t.Pos <Program () <SeparateLexerErrors t.First e.Tokens ()>>
+      >;
+}
+
+Parse-Aux {
+  t.FirstTokenPos (Program e.Units) (TkEOF t.EOFPos) (e.Errors)
+    = <SemanticCheck t.FirstTokenPos e.Units (e.Errors)>;
 }
 
 SeparateLexerErrors {
