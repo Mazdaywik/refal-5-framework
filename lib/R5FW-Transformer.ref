@@ -804,14 +804,16 @@ NewName {
 
 DoNewName {
   (e.Names) e.Prefix s.SufNo
-    , e.Prefix <Symb s.SufNo>: e.NewName
-    , e.Names
-    : {
-        e.Names-B (e.NewName) e.Names-E
-          = <DoNewName
-              ((e.NewName) e.Names-B e.Names-E) e.Prefix <+ s.SufNo 1>
-            >;
+    = <DoNewName-NameGenerated
+        (e.Prefix) s.SufNo (e.Prefix <Symb s.SufNo>) e.Names
+      >;
+}
 
-        e.Names2 = ((e.NewName) e.Names2) e.NewName;
-      };
+DoNewName-NameGenerated {
+  (e.Prefix) s.SufNo (e.NewName) e.Names-B (e.NewName) e.Names-E
+    = <DoNewName
+        ((e.NewName) e.Names-B e.Names-E) e.Prefix <+ s.SufNo 1>
+      >;
+
+  (e.Prefix) s.SufNo (e.NewName) e.Names = ((e.NewName) e.Names) e.NewName;
 }
