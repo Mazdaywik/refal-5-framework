@@ -59,7 +59,7 @@ DoScan {
 
   t.Pos (s.Digit e.Line) e.Lines,
       <Type s.Digit>: 'D0' s.Digit =
-    <DoScan-Number t.Pos (s.Digit) (e.Line) e.Lines>;
+    <DoScan-Number t.Pos t.Pos (s.Digit) (e.Line) e.Lines>;
 
   t.Pos (s.Var '.' e.Line) e.Lines,
       <IsVarType s.Var>: True =
@@ -149,27 +149,40 @@ DoScan-BuildKeyword {
 }
 
 DoScan-Number {
-  t.Pos (e.Number) (s.Next e.Line) e.Lines,
-      <Type s.Next>: 'D0' s.Next,
-      <Numb e.Number s.Next>:
-    {
-      s.Macrodigit =
-        <DoScan-Number
-          t.Pos (e.Number s.Next) (e.Line) e.Lines
-        >;
+  t.Pos t.Start (e.Number) (s.Next e.Line) e.Lines
+    , <Type s.Next>: 'D0' s.Next
+    = <DoScan-Number
+        <IncCol t.Pos> t.Start (<DropZero e.Number> s.Next) (e.Line) e.Lines
+      >;
 
-      e.MacrodigitChain =
-        (TkError t.Pos 'Very big numeric literal: ' e.Number s.Next)
-        <DoScan
-          <IncCol t.Pos Len e.Number s.Next> (e.Line) e.Lines
-        >;
-    };
+  t.Pos t.Start (e.Number) (e.Line) e.Lines
+    = <CheckNumber t.Start e.Number>
+      <DoScan t.Pos (e.Line) e.Lines>;
+}
 
-  t.Pos (e.Number) (e.Line) e.Lines =
-    (TkMacroDigit t.Pos <Numb e.Number>)
-    <DoScan
-      <IncCol t.Pos Len e.Number> (e.Line) e.Lines
-    >;
+DropZero {
+  '0' = /* пусто */;
+  e.Number = e.Number;
+}
+
+MAX-MACRODIGIT { = '4294967295' }
+
+CheckNumber {
+  t.Pos e.Number
+    , <CheckNumber-Compare
+        <Ord (<Lenw e.Number>) (<Lenw <MAX-MACRODIGIT>>)>
+      >
+    : {
+        '+' = (TkError t.Pos 'Very big numeric literal: ' e.Number);
+
+        s.Other = (TkMacroDigit t.Pos <Numb e.Number>);
+      }
+}
+
+CheckNumber-Compare {
+  () () = '0';
+  (s.Eq e.X) (s.Eq e.Y) = <CheckNumber-Compare (e.X) (e.Y)>;
+  (s.X e.X) (s.Y e.Y) = <Compare s.X s.Y>;
 }
 
 DoScan-Var {
