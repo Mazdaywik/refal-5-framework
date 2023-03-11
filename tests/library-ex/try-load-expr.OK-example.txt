@@ -1,0 +1,5 @@
+'hello' "Hello" Hello 123456789
+(
+  ('Escapes: \n\t\"\'\x10\x1A\x1a')
+  (!@#$%^&*_+-=)
+)

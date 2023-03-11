@@ -1,0 +1,16 @@
+*$FROM LibraryEx
+$EXTERN TryLoadExpr;
+
+$ENTRY Go {
+  = <Check <TryLoadExpr 'try-load-expr.OK-example.txt'>>
+}
+
+Check {
+  Success
+  'hello' "Hello" Hello 123456789
+  (
+    ('Escapes: \n\t\"\'\x10\x1A\x1a')
+    ('!@#$%^&*_+-=')
+  )
+    = /* пусто */
+}
