@@ -1,0 +1,3 @@
+$EXTERN L;
+$ENTRY Go { = <L> }
+L { = }

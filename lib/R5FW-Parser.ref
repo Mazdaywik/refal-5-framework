@@ -589,8 +589,7 @@ FunctionDef {
 
   (t.Pos (e.Name) s.Scope) (Block e.Sentences) e.Tokens (e.Errors)
     = (Function t.Pos (e.Name) s.Scope e.Sentences)
-      e.Tokens
-      (e.Errors <CheckBuiltinRedefine t.Pos e.Name>);
+      e.Tokens (e.Errors);
 
   (t.Pos (e.Name) s.Scope) (TkOpenBlock t.OpenPos) e.Tokens (e.Errors)
     = <FunctionDef
@@ -603,20 +602,8 @@ FunctionDef {
       t.Unexpected e.Tokens
       (
         e.Errors
-        <CheckBuiltinRedefine t.Pos e.Name>
         <UnexpectedToken t.Unexpected '\'{\''>
       );
-}
-
-CheckBuiltinRedefine {
-  t.Pos e.Name
-    , <Builtins>
-    : {
-        e.Names-B (e.Name) e.Names-E
-          = (Error t.Pos 'Redefinition of builtin function ' e.Name);
-
-        e.Names = /* пусто */;
-    }
 }
 
 
@@ -1078,16 +1065,61 @@ FindSemanticsErrors {
 }
 
 FindRedefinitions {
-  e.Units-B (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1) e.Units-E
-  (Function t.Pos2 (e.Name) s.Scope2 e.Sentences2)
-    = <FindRedefinitions
-        e.Units-B (Function t.Pos1 (e.Name) s.Scope1 e.Sentences1) e.Units-E
-      >
-      (t.Pos2 'Function ' e.Name ' is redefined');
+  e.Units
+    = <DoFindRedefinitions
+        <Map r5fw-parser_BuiltinDefinition <Builtins>>
+        <Map r5fw-parser_ExtractDefinition e.Units>
+      >;
+}
 
-  e.Units t.Other = <FindRedefinitions e.Units>;
+$ENTRY r5fw-parser_BuiltinDefinition {
+  (e.Name) = (Builtin NO-POS e.Name);
+}
+
+$ENTRY r5fw-parser_ExtractDefinition {
+  (Builtin NO-POS e.Name) = (Builtin NO-POS e.Name);
+
+  (SpecialComment t.Pos e.Text) = /* пропускаем */;
+
+  (Function t.Pos (e.Name) s.Scope e.Sentences) = (Define t.Pos e.Name);
+
+  (Extern e.ExternalNames)
+    = <Map r5fw-parser_MarkExternalName e.ExternalNames>;
+}
+
+$ENTRY r5fw-parser_MarkExternalName {
+  (t.Pos e.Name) = (External t.Pos e.Name);
+}
+
+DoFindRedefinitions {
+  e.Defs-B (s.Type1 t.Pos1 e.Name) e.Defs-E (s.Type2 t.Pos2 e.Name)
+    = <DoFindRedefinitions
+        e.Defs-B (s.Type1 t.Pos1 e.Name) e.Defs-E
+      >
+      <MakeRedefinitionError s.Type1 t.Pos1 s.Type2 t.Pos2 e.Name>;
+
+  e.Defs t.Other = <DoFindRedefinitions e.Defs>;
 
   /* пусто */ = /* пусто */;
+}
+
+* TODO: Выдавать предупреждения вместо ошибок, Mazdaywik/refal-5-framework#9
+
+MakeRedefinitionError {
+  Builtin NO-POS s.Type t.Pos e.Name
+    = (t.Pos 'Re' <DeclType s.Type> 'ion of builtin function ' e.Name);
+
+  s.Type1 t.Pos1 s.Type2 t.Pos2 e.Name
+    = (
+        t.Pos2
+        'Re' <DeclType s.Type2> 'ion of function ' e.Name
+        ' (function is already ' <DeclType s.Type1> 'ed)'
+      );
+}
+
+DeclType {
+  Define = 'defin';
+  External = 'declar';
 }
 
 $ENTRY r5fw-parser_FindSemanticsErrors {
