@@ -25,18 +25,6 @@ makeTOC.localizedHide = "Скрыть";
 Утилитарные функции
 -------------------
 
-### Пустые функции `Success` и `Fails` для Рефала-05
-
-    *$EENUM Success, Fails
-
-Две пустые функции, часто используемые в исходных текстах компилятора как
-признак успешного и неуспешного выполнения. Типичный формат функции,
-использующей эти признаки:
-
-    <SomeFunc e.SomeArgs>
-      == Success e.SuccessfulResult
-      == Fails e.ErrorInfo
-
 ### Функция `LoadFile`
 
     <LoadFile e.FileName> == e.Lines
@@ -257,13 +245,11 @@ makeTOC.localizedHide = "Скрыть";
 
 **Пример.** Функция, которая отделяет агнцев от козлищ.
 
-    *$ENUM Lamb /* агнец */, Goat /* козлище */
-
     /*
       <Separate t.Animal*> == (t.Lamb*) t.Goat*
       t.Animal ::=
-          (Lamb t.Lamb)
-        | (Goat t.Goat)
+          (Lamb t.Lamb) -- агнец
+        | (Goat t.Goat) -- козлище
     */
     Separate {
       e.Animals =

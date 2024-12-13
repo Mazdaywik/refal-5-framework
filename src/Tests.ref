@@ -39,8 +39,6 @@ TestAllSubstrings {
     >;
 }
 
-*$ENUM Substr, NotEmpty
-
 AllSubstrings {
   e.String, <Br Substr '=' /* пусто */> : NotEmpty = ;
 
@@ -80,8 +78,6 @@ AllSubstrings-Hard {
 }
 
 *$*****************************************************************************
-
-*$ENUM A, B, C, Q, D, ED, R, Ok, E, Fail
 
 TestDocument {
   = <AssertEq
@@ -125,8 +121,6 @@ G-doc {
 
 *$*****************************************************************************
 
-*$ENUM Equals, NotEquals, FORMAT
-
 SimpleCondition {
   (e.X) e.Y, e.Y: e.X = Equals e.X;
 
@@ -148,8 +142,6 @@ TestSimpleCondition {
 }
 
 *$*****************************************************************************
-
-*$ENUM X, Y
 
 SimpleRepeatedCondition {
   (e.X) e.X e.Y, e.X: e.Y
@@ -276,9 +268,6 @@ SimpleOneELoop0 {
 
 *$*****************************************************************************
 
-*$FROM Library
-*$EXTERN True, False
-
 Intersect {
   (e.B1 s.1 e.E1) (e.B2 s.2 e.E2), <Eq s.1 s.2>: True
     = s.1 <Intersect (e.E1) (e.B2 e.E2)>;
@@ -291,9 +280,8 @@ Eq {
   t.X t.Y = False;
 }
 
-*$ENTRY tests_USE1 { = Delim Delim2 FindXY NonsenceFunc RepeatedNonsence }
-*$ENTRY tests_USE2 { = KeyValue KeyValueRep }
-*$ENUM NoDelim
+$ENTRY tests_USE1 { = Delim Delim2 FindXY NonsenceFunc RepeatedNonsence }
+$ENTRY tests_USE2 { = KeyValue KeyValueRep Intersect }
 
 Delim {
   e.Prefix t.Delim e.Suffix, <DelimTerm t.Delim>: True = (e.Prefix) e.Suffix;
@@ -344,8 +332,6 @@ RepeatedNonsence {
 }
 
 Tail { e.X = e.X }
-
-*$ENUM Found, NotFound
 
 KeyValue {
   (e.Sample) e.Items-B (e.Key (e.Value)) e.Items-E
