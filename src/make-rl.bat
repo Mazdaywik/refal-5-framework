@@ -1,5 +1,5 @@
 @echo off
-set SOURCES=Main R5FW-Parser R5FW-Transformer ^
+set SOURCES=Main R5FW-Parser R5FW-Parser-Defs R5FW-Transformer ^
   R5FW-Plainer Tests R5FW-Parser-Defs LibraryEx
 set TARGEXE=Main-1.exe
 
@@ -22,6 +22,7 @@ goto :EOF
   for %%s in (%SOURCES%) do call :TRANSFORM %%s %1 || exit /b 1
 
   if {%1}=={MAKE-OUT} (
+    erase out\*.rasl
     pushd out
     call :SRMAKE Main.ref
     popd
@@ -38,11 +39,13 @@ goto :EOF
   if {%2}=={NUL} set TARGET=NUL
   call :RUN_TRANSFORMER %SOURCE% %TARGET% || exit /b 1
   echo.
+  set RASL=out\%SOURCE:.ref=.rasl%
+  set RASL=%RASL:\lib\=\out\%
   if {%2}=={MAKE-OUT} (
     pushd out
-    call srefc -C %SOURCE%
+    call rlc -C %SOURCE%
     popd
-    if not exist out\%SOURCE:.ref=.rasl% call :FAILED
+    if not exist %RASL% call :FAILED
   )
 goto :EOF
 
@@ -60,8 +63,8 @@ goto :EOF
 
 :SRMAKE
   setlocal
-  set SRMAKE_FLAGS=-d ../lib
-  call srmake %*
+  set RLMAKE_FLAGS=-d ../lib
+  call rlmake %*
   endlocal
   if exist *.rasl erase *.rasl
   if exist ..\lib\*.rasl erase ..\lib\*.rasl
