@@ -188,18 +188,16 @@ DoCheckNumber {
 CheckNumber-AppendDigit {
   s.Value s.Digit
     , <Numb s.Digit> : s.DigitValue
-    , <+ <* s.Value 10> s.DigitValue>
-    : {
-        /* нет старших разрядов */ s.NewValue
-          /*
-            Проверка на отсутствие переполнения в реализациях
-            без длинной арифметики.
-          */
-          , <Divmod s.NewValue 10> : (s.Value) s.DigitValue
-          = Ok s.NewValue;
+      /*
+        Проверка на отсутствие переполнения в реализациях
+        без длинной арифметики.
+      */
+    , <* s.Value 10> : /* без старшего разряда */ s.Value10
+    , <+ s.Value10 s.DigitValue> : /* без переноса */ s.NewValue
+    , <Divmod s.NewValue 10> : (s.Value) s.DigitValue
+    = Ok s.NewValue;
 
-        e.MaybeCarry s.NewValue = Overflow;
-      };
+  s.Value s.Digit = Overflow;
 }
 
 DoScan-Var {

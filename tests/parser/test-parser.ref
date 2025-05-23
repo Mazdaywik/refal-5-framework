@@ -42,11 +42,15 @@ DoBigMacrodigit {
       где длинная арифметика не поддерживается и сохраняется последняя
       макроцифра результата.
     */
-    , <+ 1 <* s.Number 2>>
+    , <* s.Number 2>
     : {
-        e.OptCarry s.Number = s.Number;
-        s.Next = <DoBigMacrodigit s.Next>;
-      }
+        e.OptCarryMul s.Number2
+          , <+ s.Number2 1>
+          : {
+              e.OptCarryAdd s.Number = s.Number;
+              s.Next = <DoBigMacrodigit s.Next>;
+            };
+      };
 }
 
 TestParse {
