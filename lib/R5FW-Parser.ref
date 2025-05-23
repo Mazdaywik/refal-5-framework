@@ -165,24 +165,41 @@ DropZero {
   e.Number = e.Number;
 }
 
-MAX-MACRODIGIT { = '4294967295' }
-
 CheckNumber {
   t.Pos e.Number
-    , <CheckNumber-Compare
-        <Ord (<Lenw e.Number>) (<Lenw <MAX-MACRODIGIT>>)>
-      >
+    , <DoCheckNumber 0 e.Number>
     : {
-        '+' = (TkError t.Pos 'Very big numeric literal: ' e.Number);
-
-        s.Other = (TkMacroDigit t.Pos <Numb e.Number>);
-      }
+        Ok s.Value = (TkMacroDigit t.Pos s.Value);
+        Overflow = (TkError t.Pos 'Very big numeric literal: ' e.Number);
+      };
 }
 
-CheckNumber-Compare {
-  () () = '0';
-  (s.Eq e.X) (s.Eq e.Y) = <CheckNumber-Compare (e.X) (e.Y)>;
-  (s.X e.X) (s.Y e.Y) = <Compare s.X s.Y>;
+DoCheckNumber {
+  s.Value /* пусто */ = Ok s.Value;
+
+  s.Value s.Digit e.Digits
+    , <CheckNumber-AppendDigit s.Value s.Digit>
+    : {
+        Ok s.NewValue = <DoCheckNumber s.NewValue e.Digits>;
+        Overflow = Overflow;
+      };
+}
+
+CheckNumber-AppendDigit {
+  s.Value s.Digit
+    , <Numb s.Digit> : s.DigitValue
+    , <+ <* s.Value 10> s.DigitValue>
+    : {
+        /* нет старших разрядов */ s.NewValue
+          /*
+            Проверка на отсутствие переполнения в реализациях
+            без длинной арифметики.
+          */
+          , <Divmod s.NewValue 10> : (s.Value) s.DigitValue
+          = Ok s.NewValue;
+
+        e.MaybeCarry s.NewValue = Overflow;
+      };
 }
 
 DoScan-Var {

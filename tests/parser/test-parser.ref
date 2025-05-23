@@ -2,7 +2,7 @@
 $EXTERN Scan, Parse;
 
 *$FROM LibraryEx
-$EXTERN Map;
+$EXTERN Map, LoadFile, SaveFile;
 
 
 $ENTRY Go {
@@ -17,8 +17,8 @@ $ENTRY Go {
         , <CheckExist e.FileName> : /* пусто */
         , <Lower e.FileName>
         : {
-            e.Name '.ok.ref' = <Parse-OK e.FileName>;
-            e.Name '.bad-syntax.ref' = <Parse-BAD e.FileName>;
+            e.Name '.ok.ref' = <TestParse OK e.FileName>;
+            e.Name '.bad-syntax.ref' = <TestParse BAD e.FileName>;
             e.Other = <Prout e.FileName ': skip'>;
           };
     }
@@ -29,33 +29,80 @@ CheckExist {
   e.FileName = <Prout 'FILE ' e.FileName ' DOES NOT EXIST'> <Exit 1>;
 }
 
-Parse-OK {
-  e.FileName
-    , <Parse <Scan e.FileName>>
-    : {
-        Success e.AST = <Prout e.FileName ': parsing successful'>;
+BigMacrodigit { = <DoBigMacrodigit 1> }
 
-        Fails e.Errors
-          = <Prout e.FileName ': PARSING FAILED, ERRORS:'>
-            <PrintErrors e.Errors>
-            <Exit 1>;
+DoBigMacrodigit {
+  s.Number
+    /*
+      Наибольший размер макроцифры 2**N − 1.
+
+      2**N − 1 = (2**(N − 1) - 1) * 2 + 1
+
+      Библиотека должна работать и в реализациях Рефала-5,
+      где длинная арифметика не поддерживается и сохраняется последняя
+      макроцифра результата.
+    */
+    , <+ 1 <* s.Number 2>>
+    : {
+        e.OptCarry s.Number = s.Number;
+        s.Next = <DoBigMacrodigit s.Next>;
       }
 }
 
-Parse-BAD {
-  e.FileName
-    , <Parse <Scan e.FileName>>
-    : {
-        Success e.AST =
-          <Prout e.FileName ': PARSER MISSED ERRORS!'>
-          <Prout 'AST:'>
-          <Map Prout e.AST>
-          <Exit 1>;
+TestParse {
+  s.Result e.FileName
+    , <Symb <BigMacrodigit>> : e.BigMacrodigit
+    , e.BigMacrodigit : e.BigMacrodigit-Prefix s.Last1 s.Last2
+    , <LoadFile e.FileName> : e.Lines
+    , <Replace
+        ('BIG-MACRODIGIT' (e.BigMacrodigit))
+        ('BIG-MACRODIGIT-PREFIX-PREFIX' (e.BigMacrodigit-Prefix))
+        ('BIG-MACRODIGIT-PREFIX' (e.BigMacrodigit-Prefix s.Last1))
+        (e.Lines)
+      >
+    : e.PreprocessedLines
+    , e.FileName '-preprocessed' : e.PreprocessedName
+    = <SaveFile (e.PreprocessedName) e.PreprocessedLines>
+      <Mu s.Result (e.FileName) <Parse <Scan e.PreprocessedName>>>
+      <Remove-Ok <RemoveFile e.PreprocessedName> (e.PreprocessedName)>;
+}
 
-        Fails e.Errors
-          = <Prout e.FileName ': errors was expected, found by parser:'>
-            <PrintErrors e.Errors>;
-      }
+Replace {
+  e.Replaces-B (e.From (e.To)) e.Replaces-E
+  (e.Lines-B (e.Line-B '@' e.From '@' e.Line-E) e.Lines-E)
+    = <Replace
+        e.Replaces-B (e.From (e.To)) e.Replaces-E
+        (e.Lines-B (e.Line-B e.To e.Line-E) e.Lines-E)
+      >;
+
+  e.Replaces (e.Lines) = e.Lines;
+}
+
+OK {
+  (e.FileName) Success e.AST = <Prout e.FileName ': parsing successful'>;
+
+  (e.FileName) Fails e.Errors
+    = <Prout e.FileName ': PARSING FAILED, ERRORS:'>
+      <PrintErrors e.Errors>
+      <Exit 1>;
+}
+
+BAD {
+  (e.FileName) Success e.AST
+    = <Prout e.FileName ': PARSER MISSED ERRORS!'>
+      <Prout 'AST:'>
+      <Map Prout e.AST>
+      <Exit 1>;
+
+  (e.FileName) Fails e.Errors
+    = <Prout e.FileName ': errors was expected, found by parser:'>
+      <PrintErrors e.Errors>;
+}
+
+Remove-Ok {
+  True () (e.Name) = /* ничего не делаем */;
+  False (e.Message) (e.Name)
+    = <Prout 'Can\'t remove file ' e.Name '!'> <Exit 1>;
 }
 
 PrintErrors {
