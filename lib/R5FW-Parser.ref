@@ -1221,16 +1221,15 @@ CheckSentence-Tail {
 }
 
 CheckResult {
-  (e.FuncNames) (e.Variables) (Call t.Pos e.Name) e.Items,
-      e.FuncNames:
-    {
-      e.Names-B (e.Name) e.Names-E =
-        <CheckResult (e.FuncNames) (e.Variables) e.Items>;
+  (e.FuncNames-B (e.Name) e.FuncNames-E) (e.Variables)
+  (Call t.Pos e.Name) e.Items
+    = <CheckResult
+        (e.FuncNames-B (e.Name) e.FuncNames-E) (e.Variables) e.Items
+      >;
 
-      e.Names =
-        (t.Pos 'function ' e.Name ' is not declared')
-        <CheckResult (e.FuncNames) (e.Variables) e.Items>;
-    };
+  (e.FuncNames) (e.Variables) (Call t.Pos e.Name) e.Items
+    = (t.Pos 'function ' e.Name ' is not declared')
+      <CheckResult (e.FuncNames) (e.Variables) e.Items>;
 
   (e.FuncNames) (e.Variables) (Variable t.Pos s.Type e.Index) e.Items,
       e.Variables:
