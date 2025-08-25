@@ -1,6 +1,6 @@
 @echo off
 setlocal
-call make-sr.bat
+call make-rl.bat
 set R05PATH=..\..\Refal-05\lib;..\..\Refal-05\src
 call ..\..\Refal-05\c-plus-plus.conf.bat
 if exist main-r05.exe erase main-r05.exe
