@@ -1,9 +1,6 @@
 *$FROM LibraryEx
 $EXTERN MapAccum, DelAccumulator, Map, Unique;
 
-*$FROM R5FW-Parser-Defs
-$EXTERN Builtins;
-
 
 /**
   <Transform e.Refal5-AST> == e.Refal5-AST
@@ -20,27 +17,28 @@ Transform-Step {
     = <DelAccumulator
         <MapAccum
           (r5fw-transformer_TransformUnit s.FnMode)
-          <GetFunctionNames (<Builtins>) e.Units>
+          <MapAccum
+            r5fw-transformer_GetFunctionName
+            (<Map r5fw-transformer_BuiltinName <ListOfBuiltin>>) e.Units
+          >
         >
       >;
 }
 
-GetFunctionNames {
-  (e.Names) e.Units (Function t.SrcPos (e.Name) s.Scope e.Sentences)
-    = <GetFunctionNames (e.Names (e.Name)) e.Units>
-      (Function t.SrcPos (e.Name) s.Scope e.Sentences);
+$ENTRY r5fw-transformer_BuiltinName {
+  (s.No s.Name s.Type) = (<Explode s.Name>);
+}
 
-  (e.Names) e.Units (Extern e.ExternalNames)
-    = <GetFunctionNames
-        (e.Names <Map r5fw-transformer_RemovePos e.ExternalNames>) e.Units
-      >
+$ENTRY r5fw-transformer_GetFunctionName {
+  (e.Names) (Function t.SrcPos (e.Name) s.Scope e.Sentences)
+    = (e.Names (e.Name)) (Function t.SrcPos (e.Name) s.Scope e.Sentences);
+
+  (e.Names) (Extern e.ExternalNames)
+    = (e.Names <Map r5fw-transformer_RemovePos e.ExternalNames>)
       (Extern e.ExternalNames);
 
-  (e.Names) e.Units (SpecialComment t.SrcPos e.Text)
-    = <GetFunctionNames (e.Names) e.Units>
-      (SpecialComment t.SrcPos e.Text);
-
-  (e.Names) /* пусто */ = (e.Names);
+  (e.Names) (SpecialComment t.SrcPos e.Text)
+    = (e.Names) (SpecialComment t.SrcPos e.Text);
 }
 
 $ENTRY r5fw-transformer_RemovePos { (t.Pos e.Name) = (e.Name) }
