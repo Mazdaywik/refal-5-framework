@@ -3,7 +3,7 @@
 run_test() {
   echo Passing $1...
   if
-    echo Y | REF5RSL=../../lib refgo test-parser+R5FW-Parser+R5FW-Parser-Defs+LibraryEx $1 2>__err.txt
+    echo Y | REF5RSL=../../lib refgo test-parser+R5FW-Parser+LibraryEx $1 2>__err.txt
   then
     echo Parser failed, see __err.txt for details
     exit 1

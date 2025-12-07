@@ -20,7 +20,7 @@ goto :EOF
 setlocal
   echo Parsing %1...
   set REF5RSL=..\..\lib
-  echo Y| refgo test-parser+R5FW-Parser+R5FW-Parser-Defs+LibraryEx %1 2>__err.txt
+  echo Y| refgo test-parser+R5FW-Parser+LibraryEx %1 2>__err.txt
   if errorlevel 1 (
     echo Parser failed, see __err.txt for details
     exit /b 1
