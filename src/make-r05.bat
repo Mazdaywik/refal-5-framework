@@ -12,8 +12,9 @@ if exist main-r05.exe erase main-r05.exe
   lib\R5FW-Transformer ^
   lib\LibraryEx ^
   Library ^
+  Go ^
   refal05rts
-erase *.obj *.tds
+erase *.obj *.tds *.c
 ren main.exe main-r05.exe
 main-r05.exe _tests_
 main-r05.exe Main.ref out/Main.r05.ref
