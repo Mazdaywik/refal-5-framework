@@ -32,7 +32,7 @@ GetFunctionNames {
 
   (e.Names) e.Units (Extern e.ExternalNames)
     = <GetFunctionNames
-        (e.Names <Map refal5-transformer_RemovePos e.ExternalNames>) e.Units
+        (e.Names <Map r5fw-transformer_RemovePos e.ExternalNames>) e.Units
       >
       (Extern e.ExternalNames);
 
@@ -43,7 +43,7 @@ GetFunctionNames {
   (e.Names) /* пусто */ = (e.Names);
 }
 
-$ENTRY refal5-transformer_RemovePos { (t.Pos e.Name) = (e.Name) }
+$ENTRY r5fw-transformer_RemovePos { (t.Pos e.Name) = (e.Name) }
 
 $ENTRY r5fw-transformer_TransformUnit {
   s.FnMode (e.Names) (Function t.SrcPos (e.Name) s.Scope e.Sentences)
@@ -99,7 +99,7 @@ DoUnBlock {
           (
             (e.NewName)
             <Map
-              (transformer_AddScopeVars e.ScopeVars) e.SubSentences
+              (r5fw-transformer_AddScopeVars e.ScopeVars) e.SubSentences
             >
           )
         )
@@ -153,17 +153,17 @@ DoWithBlock {
 BlockScopeVars {
   (e.Pattern) e.Conditions
     = <Map
-        transformer_MakeVariables
+        r5fw-transformer_MakeVariables
         <ExtractVariables ((e.Pattern) e.Conditions RETURN ())>
       >;
 }
 
-$ENTRY transformer_MakeVariables {
+$ENTRY r5fw-transformer_MakeVariables {
   ('e' e.Index) = (Brackets (Variable NO-POS 'e' e.Index));
   (s.VarType e.Index) = (Variable NO-POS s.VarType e.Index);
 }
 
-$ENTRY transformer_AddScopeVars {
+$ENTRY r5fw-transformer_AddScopeVars {
   e.ScopeVars ((e.Pattern) e.Tail) = ((e.ScopeVars e.Pattern) e.Tail);
 }
 
@@ -376,7 +376,7 @@ DoPatternSteps {
              >
              (
                <Map
-                 transformer_BindBrackets
+                 r5fw-transformer_BindBrackets
                  <T1 t.UsedVariables e.HolesAndItems>
                  <T2 t.UsedVariables e.HolesAndItems>
                  <T3 t.UsedVariables e.HolesAndItems>
@@ -390,7 +390,7 @@ DoPatternSteps {
 
            /* Конец разбора */
            e.OnlyItems
-             = (<transformer_BindBrackets <T0 e.OnlyItems>>);
+             = (<r5fw-transformer_BindBrackets <T0 e.OnlyItems>>);
       };
 }
 
@@ -407,7 +407,7 @@ HardItem {
   (e.BoundEVariables) (Brackets e.Pattern) = False;
 }
 
-$ENTRY transformer_BindBrackets {
+$ENTRY r5fw-transformer_BindBrackets {
   (e.Expr) = (<DoBindBrackets ('$') e.Expr>);
 }
 
