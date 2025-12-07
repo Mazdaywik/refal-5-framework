@@ -12,8 +12,6 @@ makeTOC.localizedHide = "Скрыть";
 Токены (лексические домены) Рефала-5
 ------------------------------------
 
-### Тип токена
-
     t.Token ::= (s.TokType t.Pos e.TokValue)
 
     s.TokType ~ e.TokValue ::=
@@ -74,8 +72,6 @@ makeTOC.localizedHide = "Скрыть";
 
 Абстратное синтаксическое дерево Рефала-5
 -----------------------------------------
-
-### Описание абстрактного синтаксического дерева
 
     t.Refal5-AST ::= t.Unit*
     t.Unit ::= t.Function | t.Extern | t.SpecialComment
