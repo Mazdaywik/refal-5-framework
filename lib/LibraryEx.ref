@@ -1,6 +1,7 @@
-*===============================================================================
-* Расширения библиотеки и функции, реализуемые средствами самого Рефала-05
-*===============================================================================
+* NB! Локальные функции должны иметь составное имя вида ‹ГлавФунк›-‹Коммент›,
+* использование короткого имени может привести к конфликту имён при вызове
+* Apply: вызов вида <Map Hex …> возможен, вызов <Map TryLoadExpr-Hex …>
+* куда менее вероятен.
 
 
 /**
@@ -284,7 +285,8 @@ TryLoadExpr-Parse {
 
   (e.Scanned) (s.LineNo s.LineLen s.Char e.Line) e.Lines
     = <TryLoadExpr-Parse
-        (e.Scanned <SkipSpace s.Char>) (s.LineNo s.LineLen e.Line) e.Lines
+        (e.Scanned <TryLoadExpr-SkipSpace s.Char>)
+        (s.LineNo s.LineLen e.Line) e.Lines
       >;
 
   (e.Scanned) (s.LineNo s.LineLen /* пусто */) e.Lines
@@ -376,7 +378,7 @@ TryLoadExpr-Parse-Quote {
     = <TryLoadExpr-MakeError s.LineNo s.LineLen () 'Unclosed quote ' s.Quote>;
 }
 
-SkipSpace {
+TryLoadExpr-SkipSpace {
   ' ' = /* пропускаем */;
   '\t' = /* пропускаем */;
   s.Char = s.Char;
@@ -384,8 +386,8 @@ SkipSpace {
 
 TryLoadExpr-Parse-Hex {
   (e.Scanned) (s.Quote e.Text) (s.LineNo s.LineLen s.H1 s.H2 e.Line) e.Lines
-    , <Hex s.H1> : s.Val1
-    , <Hex s.H2> : s.Val2
+    , <TryLoadExpr-Hex s.H1> : s.Val1
+    , <TryLoadExpr-Hex s.H2> : s.Val2
     = <TryLoadExpr-Parse-Quote
         (e.Scanned)
         (s.Quote e.Text <Chr <+ <* s.Val1 16> s.Val2>>)
@@ -395,11 +397,11 @@ TryLoadExpr-Parse-Hex {
   (e.Scanned) (s.Qoute e.Text) (s.LineNo s.LineLen e.Line) e.Lines
     = <TryLoadExpr-MakeError
         s.LineNo s.LineLen (e.Line)
-        'Bad hex escape sequence \\x' <First2 e.Line>
+        'Bad hex escape sequence \\x' <TryLoadExpr-First2 e.Line>
       >;
 }
 
-Hex {
+TryLoadExpr-Hex {
   s.Digit, <Type s.Digit> : 'D' e.1 = <Numb s.Digit>;
 
   s.Hex
@@ -411,7 +413,7 @@ Hex {
   s.Other = /* пусто */;
 }
 
-First2 {
+TryLoadExpr-First2 {
   s.1 s.2 e.Line = s.1 s.2;
   e.Line = e.Line;
 }
