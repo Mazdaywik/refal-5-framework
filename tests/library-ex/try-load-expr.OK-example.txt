@@ -1,5 +1,7 @@
-'hello' "Hello" Hello 123456789
+'hello' "Hello" Hello /* comment */ 123456789
+* comment
 (
-  ('Escapes: \n\t\"\'\x10\x1A\x1a')
-  (!@#$%^&*_+-=)
+  ('Escapes: \n\t\"\'\x10\x1A\x1a') /* comment
+  comment
+  comment */ (!@#$%^&*_+-=)
 )
