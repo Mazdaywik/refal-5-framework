@@ -1013,8 +1013,8 @@ Term {
     : e.1 (s.Literal s.SymbolType) e.2
     = (Term (Symbol s.SymbolType e.Value)) e.Tokens s.Kind (e.Errors);
 
-  () (TkVariable t.Pso s.VarType e.Index) e.Tokens s.Kind (e.Errors)
-    = (Term (Variable t.Pso s.VarType e.Index)) e.Tokens s.Kind (e.Errors);
+  () (TkVariable t.Pos s.VarType e.Index) e.Tokens s.Kind (e.Errors)
+    = (Term (Variable t.Pos s.VarType e.Index)) e.Tokens s.Kind (e.Errors);
 
   () (TkOpenBracket t.Pos) e.Tokens s.Kind (e.Errors)
     = <Term ('(' t.Pos) <Expression () e.Tokens s.Kind (e.Errors)>>;
