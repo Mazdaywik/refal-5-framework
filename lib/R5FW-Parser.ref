@@ -441,7 +441,7 @@ DoScan-Compound {
 
   t.StartPos t.Pos (e.Compound) ('\\' e.Line) e.Lines
     = <DoScan-Compound-HandleEscape
-        t.StartPos <IncCol t.Pos> (e.Compound)
+        t.StartPos t.Pos (e.Compound)
         <Escape <IncCol t.Pos> e.Line> e.Lines
       >;
 
