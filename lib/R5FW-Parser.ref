@@ -364,7 +364,7 @@ DoScan-Ident {
 
 DoScan-Chars {
   t.Pos ('\\' e.Line) e.Lines =
-    <DoScan-Chars-Escape t.Pos (e.Line) e.Lines>;
+    <DoScan-Chars-Escape t.Pos <Escape <IncCol t.Pos> e.Line> e.Lines>;
 
   t.Pos ('\'' e.Line) e.Lines =
     <DoScan <IncCol t.Pos> (e.Line) e.Lines>;
@@ -378,41 +378,40 @@ DoScan-Chars {
     <DoScan <IncLine t.Pos> e.Lines>;
 }
 
-SimpleEscapedChar {
-  s.Escaped
+Escape {
+  t.Pos s.Escaped e.Line
     , ('\'\'') ('\"\"') ('\\\\') ('n\n') ('r\r') ('t\t')
       ('<<') ('>>') ('((') ('))')
-    : {
-        e.Escapes-B (s.Escaped s.Char) e.Escapes-E = s.Char;
+    : e.Escapes-B (s.Escaped s.Char) e.Escapes-E
+    = Ok s.Char <IncCol t.Pos> (e.Line);
 
-        e.Escapes = /* пусто */;
-      }
+  t.Pos 'x' s.Hex1 s.Hex2 e.Line
+    , <HexDigit s.Hex1> : s.Num1
+    , <HexDigit s.Hex2> : s.Num2
+    = Ok <Chr <+ <* s.Num1 16> s.Num2>>
+      <IncCol t.Pos Len 'x' s.Hex1 s.Hex2> (e.Line);
+
+  t.Pos 'x' e.Line
+    = Error ('After \\x must be two hex digits') <IncCol t.Pos> (e.Line);
+
+  t.Pos s.Other e.Line
+    = Error ('Bad escape sequence \\' s.Other) <IncCol t.Pos> (e.Line);
+
+  t.Pos /* пусто */ = Error-EOL;
 }
 
 DoScan-Chars-Escape {
-  t.Pos (s.Escaped e.Line) e.Lines,
-      <SimpleEscapedChar s.Escaped>: s.Char =
-    (TkChar t.Pos s.Char)
-    <DoScan-Chars <IncCol t.Pos Len '\\' s.Escaped> (e.Line) e.Lines>;
+  t.Pos Ok s.Char t.NextPos (e.Line) e.Lines
+    = (TkChar t.Pos s.Char)
+      <DoScan-Chars t.NextPos (e.Line) e.Lines>;
 
-  t.Pos ('x' s.Hex1 s.Hex2 e.Line) e.Lines,
-      <HexDigit s.Hex1>: s.Num1,
-      <HexDigit s.Hex2>: s.Num2 =
-    (TkChar t.Pos <Chr <+ <* s.Num1 16> s.Num2>>)
-    <DoScan-Chars <IncCol t.Pos Len '\\x' s.Hex1 s.Hex2> (e.Line) e.Lines>;
+  t.Pos Error (e.Message) t.NextPos (e.Line) e.Lines
+    = (TkError t.Pos e.Message)
+      <DoScan-Chars t.NextPos (e.Line) e.Lines>;
 
-  t.Pos ('x' e.Line) e.Lines =
-    (TkError t.Pos 'After \\x must be two hex digits')
-    <DoScan-Chars <IncCol t.Pos Len '\\x'> (e.Line) e.Lines>;
-
-
-  t.Pos (s.Other e.Line) e.Lines =
-    (TkError t.Pos 'Bad escape sequence \\' s.Other)
-    <DoScan-Chars <IncCol t.Pos Len '\\' s.Other> (e.Line) e.Lines>;
-
-  t.Pos () e.Lines =
-    (TkError t.Pos 'Unexpected \\ at end of string literal')
-    <DoScan <IncLine t.Pos> e.Lines>;
+  t.Pos Error-EOL e.Lines
+    = (TkError t.Pos 'Unexpected \\ at end of string literal')
+      <DoScan <IncLine t.Pos> e.Lines>;
 }
 
 HexDigit {
@@ -442,7 +441,8 @@ DoScan-Compound {
 
   t.StartPos t.Pos (e.Compound) ('\\' e.Line) e.Lines
     = <DoScan-Compound-HandleEscape
-        t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines
+        t.StartPos <IncCol t.Pos> (e.Compound)
+        <Escape <IncCol t.Pos> e.Line> e.Lines
       >;
 
   t.StartPos t.Pos (e.Compound) (s.Char e.Line) e.Lines
@@ -456,32 +456,20 @@ DoScan-Compound {
 }
 
 DoScan-Compound-HandleEscape {
-  t.StartPos t.Pos (e.Compound) (s.Escaped e.Line) e.Lines
-    , <SimpleEscapedChar s.Escaped> : s.Char
+  t.StartPos t.EscapePos (e.Compound) Ok s.Char t.NextPos (e.Line) e.Lines
     = <DoScan-Compound
-        t.StartPos <IncCol t.Pos> (e.Compound s.Char) (e.Line) e.Lines
-       >;
-
-  t.StartPos t.Pos (e.Compound) ('x' s.Hex1 s.Hex2 e.Line) e.Lines
-    , <HexDigit s.Hex1> : s.Num1
-    , <HexDigit s.Hex2> : s.Num2
-    = <DoScan-Compound
-        t.StartPos <IncCol t.Pos Len 'x' s.Hex1 s.Hex2>
-        (e.Compound <Chr <+ <* s.Num1 16> s.Num2>>) (e.Line) e.Lines
+        t.StartPos t.NextPos (e.Compound s.Char) (e.Line) e.Lines
       >;
 
-  t.StartPos t.Pos (e.Compound) ('x' e.Line) e.Lines
-    = (TkError t.Pos 'After \\x must be two hex digits')
-      <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
+  t.StartPos t.EscapePos (e.Compound)
+  Error (e.Message) t.NextPos (e.Line) e.Lines
+    = (TkError t.EscapePos e.Message)
+      <DoScan-Compound t.StartPos t.NextPos (e.Compound) (e.Line) e.Lines>;
 
-  t.StartPos t.Pos (e.Compound) (s.Other e.Line) e.Lines
-    = (TkError t.Pos 'Bad escape sequence \\' s.Other)
-      <DoScan-Compound t.StartPos <IncCol t.Pos> (e.Compound) (e.Line) e.Lines>;
-
-  t.StartPos t.Pos (e.Compound) () e.Lines
-    = (TkError t.Pos 'Unexpected \\ at end of compound literal')
+  t.StartPos t.EscapePos (e.Compound) Error-EOL e.Lines
+    = (TkError t.EscapePos 'Unexpected \\ at end of compound literal')
       (TkCompound t.StartPos e.Compound)
-      <DoScan <IncLine t.Pos> e.Lines>;
+      <DoScan <IncLine t.EscapePos> e.Lines>;
 }
 
 
