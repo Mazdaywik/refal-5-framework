@@ -187,6 +187,9 @@ DoScan {
   t.Pos ('\"' e.Line) e.Lines =
     <DoScan-Compound t.Pos <IncCol t.Pos> () (e.Line) e.Lines>;
 
+  t.Pos ('\\' e.Line) e.Lines =
+    <DoScan-Escape t.Pos <Escape <IncCol t.Pos> e.Line> e.Lines>;
+
   t.Pos (s.Other e.Line) e.Lines =
     (TkError t.Pos 'Bad character \'' s.Other '\'')
     <DoScan <IncCol t.Pos> (e.Line) e.Lines>;
@@ -470,6 +473,18 @@ DoScan-Compound-HandleEscape {
     = (TkError t.EscapePos 'Unexpected \\ at end of compound literal')
       (TkCompound t.StartPos e.Compound)
       <DoScan <IncLine t.EscapePos> e.Lines>;
+}
+
+DoScan-Escape {
+  t.Pos Ok s.Char t.NextPos (e.Line) e.Lines
+    = (TkChar t.Pos s.Char) <DoScan t.NextPos (e.Line) e.Lines>;
+
+  t.Pos Error (e.Message) t.NextPos (e.Line) e.Lines
+    = (TkError t.Pos e.Message) <DoScan t.NextPos (e.Line) e.Lines>;
+
+  t.Pos Error-EOL e.Lines
+    = (TkError t.Pos 'Unexpected \\ at end of line')
+      <DoScan <IncLine t.Pos> e.Lines>;
 }
 
 
