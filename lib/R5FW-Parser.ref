@@ -106,6 +106,8 @@ $ENTRY ScanString-FromPos {
 SkipBOM {
   ('\xEF\xBB\xBF' e.FirstLine) e.Lines = (e.FirstLine) e.Lines;
 
+  (s.BOM e.FirstLine) e.Lines, <Ord s.BOM> : 65279 = (e.FirstLine) e.Lines;
+
   e.Lines = e.Lines;
 }
 
