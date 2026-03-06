@@ -1,0 +1,51 @@
+* Переформатирует исходник с удалением всех комментариев
+
+*$FROM LibraryEx
+$EXTERN ArgList, SaveFile, Map;
+
+*$FROM R5FW-Parser
+$EXTERN Scan, Parse;
+
+*$FROM R5FW-Plainer
+$EXTERN Plain;
+
+
+$ENTRY Go {
+  /* пусто */
+    , <ArgList>
+    : {
+        (e.ProgName) (e.Source) (e.Dest) e.Skipped
+          = <Reformat (e.Source) (e.Dest)>;
+
+        (e.ProgName) (e.Source)
+          , e.Source : e.Base '.' e.Ref
+          , <Lower e.Ref> : 'ref'
+          = <Reformat (e.Source) (e.Base '-out.' e.Ref)>;
+
+        (e.ProgName)
+          = <Putout 0 'Command line error, use:'>
+            <Putout 0>
+            <Putout 0 '    r5fw-format source [dest]'>
+            <Exit 1>;
+      };
+}
+
+Reformat {
+  (e.Source) (e.Dest)
+    , <Parse <Scan e.Source>>
+    : {
+        Success e.AST = <SaveFile (e.Dest) <Plain e.AST>>;
+
+        Fails e.Errors
+          = <Putout 0 'Syntax errors are found:'>
+            <Map format_Error e.Errors>
+            <Exit 1>;
+      };
+}
+
+$ENTRY format_Error {
+  ((s.Line s.Col e.FileName) e.Message)
+    = <Putout 0 e.FileName ':' <Symb s.Line> ':' <Symb s.Col> ':' e.Message>;
+
+  /* пусто */ = /* всё */
+}

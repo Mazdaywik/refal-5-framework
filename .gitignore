@@ -1,2 +1,4 @@
 /lib/**/*.rsl
 /lib/**/*.c
+/src/**/*.rsl
+/src/**/*.c

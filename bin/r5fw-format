@@ -1,0 +1,7 @@
+#!/bin/sh
+
+(
+  REF5RSL="`dirname "$0"`/../lib:`dirname "$0"`/../src"
+  export REF5RSL
+  refgo "format+LibraryEx+R5FW-Parser+R5FW-Plainer" "$@"
+)
