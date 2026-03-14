@@ -10,6 +10,10 @@
 
 Установка
 ---------
+Склонируйте репозиторий <https://github.com/Mazdaywik/refal-5-framework>:
+
+    git clone https://github.com/Mazdaywik/refal-5-framework
+
 Запустите `setup.bat` или `setup.sh`, после чего добавьте папки `lib`
 и `lib/〈платформа〉` (где `〈платформа〉` — это `windows` или `posix`)
 в переменную окружения `REF5RSL`. После этого можно будет пользоваться
